@@ -4,4 +4,8 @@
     <string name="error_authentification_canceled">Authentification annulée</string>
     <string name="error_no_internet">Pas de connection internet !</string>
     <string name="error_unknow_error">Erreur inconnue !</string>
+
+    <!-- Used in NavigationDrawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

@@ -3,15 +3,18 @@ package com.openclassroom.go4lunch;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RelativeLayout;
 
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Arrays;
@@ -20,13 +23,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 123;
 
-    private ConstraintLayout constraintLayout;
+    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        constraintLayout = findViewById(R.id.main_activity_layout);
+        drawerLayout = findViewById(R.id.activity_main_drawer_layout);
         startSignInActivity();
     }
 
@@ -50,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
         this.handleResponseAfterSignIn(requestCode, resultCode, data);
     }
 
-    private void showSnackBar(ConstraintLayout relativeLayout, String message){
-        Snackbar.make(relativeLayout, message, Snackbar.LENGTH_SHORT).show();
+    private void showSnackBar(DrawerLayout drawerLayout, String message){
+        Snackbar.make(drawerLayout, message, Snackbar.LENGTH_SHORT).show();
     }
 
     private void handleResponseAfterSignIn(int requestCode, int resultCode, Intent data){
@@ -60,14 +63,14 @@ public class MainActivity extends AppCompatActivity {
 
         if(requestCode == RC_SIGN_IN){
             if(resultCode == RESULT_OK){ // SUCCESS
-                showSnackBar(this.constraintLayout, getString(R.string.connection_secceded));
+                showSnackBar(this.drawerLayout, getString(R.string.connection_secceded));
             }else{ // ERRORS
                 if(response == null){
-                    showSnackBar(this.constraintLayout, getString(R.string.error_authentification_canceled));
+                    showSnackBar(this.drawerLayout, getString(R.string.error_authentification_canceled));
                 }else if(response.getErrorCode() == ErrorCodes.NO_NETWORK){
-                    showSnackBar(this.constraintLayout, getString(R.string.error_no_internet));
+                    showSnackBar(this.drawerLayout, getString(R.string.error_no_internet));
                 }else if(response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR){
-                    showSnackBar(this.constraintLayout, getString(R.string.error_unknow_error));
+                    showSnackBar(this.drawerLayout, getString(R.string.error_unknow_error));
                 }
             }
         }

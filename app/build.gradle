@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 29
@@ -23,7 +24,30 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.navigation:navigation-fragment:2.0.0'
+    implementation 'androidx.navigation:navigation-ui:2.0.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    // Firebase
+    implementation "com.google.firebase:firebase-core:11.8.0"
+    implementation 'com.google.firebase:firebase-messaging:11.8.0'
+
+    // FirebaseUI
+    implementation 'com.firebaseui:firebase-ui-storage:3.1.3'
+    implementation 'com.firebaseui:firebase-ui-auth:3.1.3'
+    implementation 'com.firebaseui:firebase-ui-firestore:3.1.3'
+
+    // Facebook login support
+    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.google.android.material:material:1.0.0'
+
+    // Butterknife
+    // Impossible de les utiliser car avec androidx nécessite sdk min 24
+    /*implementation 'com.jakewharton:butterknife:10.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.0.0'*/
+
 }

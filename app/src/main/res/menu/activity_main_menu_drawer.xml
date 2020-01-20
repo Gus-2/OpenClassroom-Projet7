@@ -2,24 +2,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/activity_main_drawer_news"
-            android:title="Fil d'actualité" />
-    </group>
-
-    <item android:title="Configuration">
+    <item android:title="">
         <menu>
             <group android:checkableBehavior="single">
                 <item
-                    android:id="@+id/activity_main_drawer_profile"
-                    android:title="Profil" />
+                    android:id="@+id/activity_main_drawer_lunch"
+                    android:icon="@drawable/ic_drawer_cutlery"
+                    android:title="@string/drawer_your_lunch" />
                 <item
                     android:id="@+id/activity_main_drawer_settings"
-                    android:title="Paramètres" />
+                    android:icon="@drawable/ic_drawer_settings"
+                    android:title="@string/activity_main_drawer_settings" />
+                <item
+                    android:id="@+id/activity_main_drawer_logout"
+                    android:icon="@drawable/ic_drawer_logout"
+                    android:title="@string/activity_main_drawer_logout" />
             </group>
         </menu>
+
     </item>
+
 
 </menu>

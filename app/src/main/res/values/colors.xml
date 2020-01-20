@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#ed6337</color>
+    <color name="colorPrimaryDark">#b52f19</color>
     <color name="colorAccent">#D81B60</color>
+
+    <color name="colorWhenItemIsNotSelected">#000000</color>
+    <color name="colorWhenItemIsSelected">#ed6337</color>
+
+    <color name="White">#ffffff</color>
+
+    <!-- DRAWER -->
+    <color name="navigationMenuColor">#f08f5d</color>
 </resources>

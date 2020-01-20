@@ -8,4 +8,14 @@
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- BOTTOM NAVIGATION VIEW -->
+    <string name="bottom_navigation_menu_map">Carte</string>
+    <string name="bottom_navigation_menu_list">Restaurants</string>
+    <string name="bottom_navigation_menu_workmates">Collègues</string>
+    <string name="drawer_your_lunch">VOTRE REPAS</string>
+    <string name="activity_main_drawer_settings">PARAMETRES</string>
+    <string name="activity_main_drawer_logout">SE DECONNECTER</string>
+    <string name="drawer_header_go4lunch">Go4Lunch</string>
+
 </resources>

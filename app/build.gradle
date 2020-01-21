@@ -11,6 +11,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -45,6 +46,10 @@ dependencies {
     // Facebook login support
     implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
     implementation 'com.google.android.material:material:1.0.0'
+
+    // Maps
+    implementation 'com.google.android.gms:play-services-maps:11.8.0'
+    implementation 'com.google.android.libraries.places:places:2.0.0'
 
     // Butterknife
     // Impossible de les utiliser car avec androidx nécessite sdk min 24

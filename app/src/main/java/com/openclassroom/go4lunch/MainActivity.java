@@ -73,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .setTheme(R.style.LoginTheme)
                         .setAvailableProviders(
                                 Arrays.asList( //EMAIL
-                                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                                        new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build())) // SUPPORT GOOGLE
+                                        new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
+                                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())) // SUPPORT GOOGLE
                         .setIsSmartLockEnabled(false, true)
                         .build(),
                 RC_SIGN_IN);

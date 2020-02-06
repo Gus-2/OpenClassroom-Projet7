@@ -3,6 +3,7 @@
     package="com.openclassroom.go4lunch">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <!-- Use the wifi or the cellular data to determine the device's location -->
     <uses-permission android:name="android.permission.INTERNET"/>
 

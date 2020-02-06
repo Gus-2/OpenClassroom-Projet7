@@ -18,4 +18,7 @@
     <string name="activity_main_drawer_logout">SE DECONNECTER</string>
     <string name="drawer_header_go4lunch">Go4Lunch</string>
 
+    <string name="facebook_application_id">491534045101730</string>
+    <string name="fb_login_protocol_scheme">fb491534045101730</string>
+
 </resources>

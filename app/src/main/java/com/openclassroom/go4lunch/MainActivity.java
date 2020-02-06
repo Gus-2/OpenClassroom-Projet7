@@ -21,6 +21,8 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -58,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         startDefaultFragment();
 
+        checkGooglePlayServices();
+
     }
 
     private void startDefaultFragment(){
@@ -73,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .setTheme(R.style.LoginTheme)
                         .setAvailableProviders(
                                 Arrays.asList( //EMAIL
-                                        new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
-                                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())) // SUPPORT GOOGLE
+                                        new AuthUI.IdpConfig.FacebookBuilder().build(),
+                                        new AuthUI.IdpConfig.GoogleBuilder().build())) // SUPPORT GOOGLE
                         .setIsSmartLockEnabled(false, true)
                         .build(),
                 RC_SIGN_IN);
@@ -100,9 +104,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }else{ // ERRORS
                 if(response == null){
                     showSnackBar(this.drawerLayout, getString(R.string.error_authentification_canceled));
-                }else if(response.getErrorCode() == ErrorCodes.NO_NETWORK){
+                }else if(response.getError().getErrorCode() == ErrorCodes.NO_NETWORK){
                     showSnackBar(this.drawerLayout, getString(R.string.error_no_internet));
-                }else if(response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR){
+                }else if(response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR){
                     showSnackBar(this.drawerLayout, getString(R.string.error_unknow_error));
                 }
             }
@@ -195,5 +199,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return false;
             }
         });
+    }
+
+    private boolean checkGooglePlayServices() {
+
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+
+        int result = googleAPI.isGooglePlayServicesAvailable(this);
+
+        if(result != ConnectionResult.SUCCESS) {
+
+            if(googleAPI.isUserResolvableError(result)) {
+
+                googleAPI.getErrorDialog(this, result,
+
+                        0).show();
+
+            }
+
+            return false;
+
+        }
+
+        return true;
+
     }
 }

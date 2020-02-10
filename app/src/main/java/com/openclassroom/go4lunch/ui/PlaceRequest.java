@@ -1,4 +1,4 @@
-package com.openclassroom.go4lunch;
+package com.openclassroom.go4lunch.ui;
 
 import android.os.AsyncTask;
 import android.os.Handler;

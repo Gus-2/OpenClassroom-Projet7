@@ -1,35 +1,45 @@
-package com.openclassroom.go4lunch;
+package com.openclassroom.go4lunch.ui;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.RelativeLayout;
-
-
+import android.widget.Toast;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.di.PlacesApiRequestSingleton;
+import com.openclassroom.go4lunch.models.Example;
 
+import java.io.IOException;
 import java.util.Arrays;
+
+import retrofit.Call;
+import retrofit.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -39,14 +49,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Toolbar toolbar;
     private NavigationView navigationView;
     private BottomNavigationView bottomNavigationView;
+    // Responsible for fetching the current location of the device
+    private FusedLocationProviderClient mFusedLocationProviderClient;
+    private PlacesClient placesClient;
+    private boolean mLocationPermissionGranted;
+    public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION =1;
+    private Location mLastKnownLocation;
+    private Example nearbyLocations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        getLocationPermission();
+
+        checkGooglePlayServices();
+
+        startSignInActivity();
+
         drawerLayout = findViewById(R.id.activity_main_drawer_layout);
 
         bottomNavigationView = findViewById(R.id.activity_main_bottom_navigation);
+
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        Places.initialize(this, getResources().getString(R.string.map_key));
+        placesClient = Places.createClient(this);
 
         this.configureNavigationBottom();
 
@@ -56,18 +84,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         this.configureNavigationView();
 
-        startSignInActivity();
+        getDeviceLocation();
 
-        startDefaultFragment();
 
-        checkGooglePlayServices();
+
 
     }
 
+    public Example getNearbyLocations() {
+        return nearbyLocations;
+    }
+
+    public Location getLocation(){
+        getDeviceLocation();
+        return mLastKnownLocation;
+    }
+
+    public boolean getLocationGranted(){
+        return mLocationPermissionGranted;
+    }
+
     private void startDefaultFragment(){
+        Bundle bundle = new Bundle();
+
+        bundle.putParcelable("Location", mLastKnownLocation);
+        bundle.putBoolean("LocationGranted", mLocationPermissionGranted);
+        bundle.putParcelable("NearbyLocation", nearbyLocations);
+
+        MapFragment mapFragment = new MapFragment();
+        mapFragment.setArguments(bundle);
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new MapFragment())
-                .commit();
+                .replace(R.id.fragment_container, mapFragment)
+                .commitAllowingStateLoss();
     }
 
     private void startSignInActivity(){
@@ -202,26 +251,108 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private boolean checkGooglePlayServices() {
-
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-
         int result = googleAPI.isGooglePlayServicesAvailable(this);
-
         if(result != ConnectionResult.SUCCESS) {
-
             if(googleAPI.isUserResolvableError(result)) {
-
                 googleAPI.getErrorDialog(this, result,
-
                         0).show();
-
             }
-
             return false;
+        }
+        return true;
+    }
 
+    private synchronized void getDeviceLocation() {
+        try {
+            if (mLocationPermissionGranted) {
+                mFusedLocationProviderClient.getLastLocation()
+                        .addOnCompleteListener(new OnCompleteListener<Location>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Location> task) {
+                                if (task.isSuccessful()) {
+                                    MainActivity.this.mLastKnownLocation = task.getResult();
+
+                                    ApiCallAsyncTask apiCallAsyncTask = new ApiCallAsyncTask();
+                                    apiCallAsyncTask.execute(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude(), getResources().getString(R.string.map_key));
+
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Veuillez autoriser la locations de l'appareil via les paramètres", Toast.LENGTH_LONG);
+                                }
+                            }
+                        });
+            }
+        } catch(SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
         }
 
-        return true;
+    }
 
+    private void getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mLocationPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        mLocationPermissionGranted = false;
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mLocationPermissionGranted = true;
+                }
+            }
+        }
+
+    }
+
+
+    private class ApiCallAsyncTask extends AsyncTask<String, Void, Example> {
+
+        @Override
+        protected Example doInBackground(String... strings) {
+
+            Call<Example> call = PlacesApiRequestSingleton.getInstance().getJsonPlaceHolderApi()
+                    .getExample(strings[0], strings[1]);
+
+            /*call.enqueue(new Callback<Example>() {
+                @Override
+                public void onResponse(Response<Example> response, Retrofit retrofit) {
+
+                    Log.d("Response", "" + response.body());
+                    example = response.body();
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    Log.d("Error Retrofit Api ", "" + t.getMessage());
+                }
+            });*/
+
+            try {
+                Response<Example> exampleReturned = call.execute();
+                nearbyLocations = exampleReturned.body();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return nearbyLocations;
+        }
+
+        @Override
+        protected void onPostExecute(Example example) {
+            super.onPostExecute(example);
+            startDefaultFragment();
+        }
     }
 }

@@ -9,11 +9,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -32,16 +33,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.openclassroom.go4lunch.R;
-import com.openclassroom.go4lunch.di.PlacesApiRequestSingleton;
+import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.utils.RetrofitStreams;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import retrofit.Call;
-import retrofit.Response;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
 
     private static final int RC_SIGN_IN = 123;
 
@@ -56,6 +59,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION =1;
     private Location mLastKnownLocation;
     private Example nearbyLocations;
+    private Disposable disposable;
+    private List<DetailsPlaces> detailsPlaces;
+
+
+    public void setNearbyLocations(Example example){
+        nearbyLocations = example;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +95,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.configureNavigationView();
 
         getDeviceLocation();
-
-
-
 
     }
 
@@ -216,7 +223,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
     }
 
-    // 2 - Configure Drawer Layout
     private void configureDrawerLayout(){
         this.drawerLayout = findViewById(R.id.activity_main_drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -236,10 +242,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 if(menuItem.getItemId() == R.id.action_map){
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MapFragment()).commit();
+                    startDefaultFragment();
                     return true;
                 } else if (menuItem.getItemId() == R.id.action_restaurant){
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new RestaurantFragment()).commit();
+                    RestaurantFragment restaurantFragment = new RestaurantFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("NearbyPlaces", nearbyLocations);
+                    bundle.putParcelableArrayList("DetailsPlaces", (ArrayList<? extends Parcelable>) detailsPlaces);
+                    restaurantFragment.setArguments(bundle);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
                     return true;
                 } else if (menuItem.getItemId() == R.id.action_workmate){
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WorkmatesFragment()).commit();
@@ -272,10 +283,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             public void onComplete(@NonNull Task<Location> task) {
                                 if (task.isSuccessful()) {
                                     MainActivity.this.mLastKnownLocation = task.getResult();
-
-                                    ApiCallAsyncTask apiCallAsyncTask = new ApiCallAsyncTask();
-                                    apiCallAsyncTask.execute(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude(), getResources().getString(R.string.map_key));
-
+                                    executeHttpRequestWithRetrofit(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude());
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Veuillez autoriser la locations de l'appareil via les paramètres", Toast.LENGTH_LONG);
                                 }
@@ -287,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
     }
+
 
     private void getLocationPermission() {
         if (ContextCompat.checkSelfPermission(this,
@@ -316,43 +325,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    private void executeHttpRequestWithRetrofit(String location){
 
-    private class ApiCallAsyncTask extends AsyncTask<String, Void, Example> {
+        this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails("https://maps.googleapis.com/maps/api/place/nearbysearch/", "https://maps.googleapis.com/maps/api/place/details/",
+                location,getResources().getString(R.string.map_key)).subscribeWith(new DisposableObserver<List<DetailsPlaces>>(){
 
-        @Override
-        protected Example doInBackground(String... strings) {
+            @Override
+            public void onNext(List<DetailsPlaces> detailsPlaces) {
+                MainActivity.this.detailsPlaces = detailsPlaces;
 
-            Call<Example> call = PlacesApiRequestSingleton.getInstance().getJsonPlaceHolderApi()
-                    .getExample(strings[0], strings[1]);
-
-            /*call.enqueue(new Callback<Example>() {
-                @Override
-                public void onResponse(Response<Example> response, Retrofit retrofit) {
-
-                    Log.d("Response", "" + response.body());
-                    example = response.body();
-                }
-
-                @Override
-                public void onFailure(Throwable t) {
-                    Log.d("Error Retrofit Api ", "" + t.getMessage());
-                }
-            });*/
-
-            try {
-                Response<Example> exampleReturned = call.execute();
-                nearbyLocations = exampleReturned.body();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
 
-            return nearbyLocations;
-        }
+            @Override
+            public void onError(Throwable e) {
 
-        @Override
-        protected void onPostExecute(Example example) {
-            super.onPostExecute(example);
-            startDefaultFragment();
-        }
+            }
+
+            @Override
+            public void onComplete() {
+                MainActivity.this.nearbyLocations = RetrofitStreams.nearbyPlaces;
+                startDefaultFragment();
+            }
+        });
+
     }
+
+
+
 }

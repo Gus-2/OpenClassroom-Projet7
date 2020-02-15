@@ -1,13 +1,12 @@
 package com.openclassroom.go4lunch.utils;
 
+import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
 
-import java.util.List;
+import io.reactivex.Observable;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 
-import retrofit.Call;
-import retrofit.http.GET;
-import retrofit.http.Path;
-import retrofit.http.Query;
 
 /**
  * Created by de Meeûs Augustin on 2020-02-08
@@ -15,8 +14,17 @@ import retrofit.http.Query;
 public interface JsonPlaceHolderApi {
 
     @GET("json?radius=1500&type=restaurant")
-    Call<Example> getExample(
+    Observable<Example> getExample(
             @Query("location") String location,
             @Query("key") String key
     );
+
+    @GET("json?fields=opening_hours,formatted_address")
+    Observable<DetailsPlaces> getPlaceDetails(
+        @Query("place_id") String placeId,
+        @Query("key") String key
+    );
+
+
+
 }

@@ -30,7 +30,7 @@ public class Example implements Parcelable {
     @Expose
     private String status;
 
-    protected Example(Parcel in) {
+    public Example(Parcel in) {
         nextPageToken = in.readString();
         status = in.readString();
     }

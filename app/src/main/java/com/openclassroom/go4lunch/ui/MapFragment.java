@@ -27,6 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.Example;
 import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.ui.MainActivity;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 
 

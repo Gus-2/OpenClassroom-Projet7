@@ -1,5 +1,6 @@
 package com.openclassroom.go4lunch.ui;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,8 +29,8 @@ public class RestaurantFragment extends Fragment {
     private RecyclerView.Adapter mAdapter;
     private Example nearbyPlaces;
     private RecyclerView recyclerView;
-    private ProgressBar progressBar;
     private ArrayList<DetailsPlaces> detailsPlaces;
+    private Location lastKnownLocation;
 
 
     @Nullable
@@ -38,17 +39,14 @@ public class RestaurantFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.restaurants_fragment, container, false);
         layoutManager = new LinearLayoutManager(getActivity());
         recyclerView = rootView.findViewById(R.id.rv_restaurants);
-        progressBar = rootView.findViewById(R.id.pr_restaurants);
-
 
         nearbyPlaces = getArguments().getParcelable("NearbyPlaces");
         detailsPlaces = getArguments().getParcelableArrayList("DetailsPlaces");
+        lastKnownLocation = getArguments().getParcelable("Location");
 
-        progressBar.setVisibility(View.GONE);
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new MyRestaurantAdapter(nearbyPlaces);
+        mAdapter = new MyRestaurantAdapter(lastKnownLocation, nearbyPlaces, detailsPlaces, getActivity());
         recyclerView.setAdapter(mAdapter);
-
 
         return rootView;
 

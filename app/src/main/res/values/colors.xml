@@ -11,4 +11,8 @@
 
     <!-- DRAWER -->
     <color name="navigationMenuColor">#f08f5d</color>
+    <color name="red">#fc0000</color>
+
+    <color name="police_color">#737373</color>
+    <color name="black">#000000</color>
 </resources>

@@ -59,7 +59,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         SecurityChecks.CheckGooglePlayServices(getContext());
 
         bundle = getArguments();
-        if( getArguments() == null){
+        if( bundle == null){
             nearbyLocation = ((MainActivity) getActivity()).getNearbyLocations();
             mLocationGranted = ((MainActivity) getActivity()).getLocationGranted();
             mLastKnownLocation = ((MainActivity) getActivity()).getLocation();

@@ -72,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*Intent intent = new Intent(this, DetailsDescriptionRestaurant.class);
+        startActivity(intent);*/
+
         getLocationPermission();
 
         checkGooglePlayServices();
@@ -171,7 +174,6 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
 
     @Override
     public void onBackPressed() {
-        // 5 - Handle back click to close menu
         if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             this.drawerLayout.closeDrawer(GravityCompat.START);
         } else {
@@ -183,7 +185,6 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
 
-        // 4 - Handle Navigation Item Click
         int id = item.getItemId();
 
         switch (id){
@@ -213,11 +214,6 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
         return true;
     }
 
-    // ---------------------
-    // CONFIGURATION
-    // ---------------------
-
-    // 1 - Configure Toolbar
     private void configureToolBar(){
         this.toolbar = findViewById(R.id.activity_main_toolbar);
         setSupportActionBar(toolbar);
@@ -249,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                     Bundle bundle = new Bundle();
                     bundle.putParcelable("NearbyPlaces", nearbyLocations);
                     bundle.putParcelableArrayList("DetailsPlaces", (ArrayList<? extends Parcelable>) detailsPlaces);
+                    bundle.putParcelable("Location", mLastKnownLocation);
                     restaurantFragment.setArguments(bundle);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
                     return true;
@@ -283,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                             public void onComplete(@NonNull Task<Location> task) {
                                 if (task.isSuccessful()) {
                                     MainActivity.this.mLastKnownLocation = task.getResult();
-                                    executeHttpRequestWithRetrofit(mLastKnownLocation.getLatitude() + "," + mLastKnownLocation.getLongitude());
+                                    executeHttpRequestWithRetrofit(task.getResult().getLatitude() + "," + task.getResult().getLongitude());
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Veuillez autoriser la locations de l'appareil via les paramètres", Toast.LENGTH_LONG);
                                 }
@@ -322,18 +319,16 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                 }
             }
         }
-
     }
 
     private void executeHttpRequestWithRetrofit(String location){
 
-        this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails("https://maps.googleapis.com/maps/api/place/nearbysearch/", "https://maps.googleapis.com/maps/api/place/details/",
+        this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails(
                 location,getResources().getString(R.string.map_key)).subscribeWith(new DisposableObserver<List<DetailsPlaces>>(){
 
             @Override
             public void onNext(List<DetailsPlaces> detailsPlaces) {
                 MainActivity.this.detailsPlaces = detailsPlaces;
-
             }
 
             @Override
@@ -347,9 +342,5 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                 startDefaultFragment();
             }
         });
-
     }
-
-
-
 }

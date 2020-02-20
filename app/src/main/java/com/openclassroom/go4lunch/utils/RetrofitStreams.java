@@ -2,7 +2,8 @@ package com.openclassroom.go4lunch.utils;
 
 import android.util.Log;
 
-import com.openclassroom.go4lunch.di.PlacesApiRequestSingleton;
+import com.openclassroom.go4lunch.di.DetailsPlacesApiRequestSingleton;
+import com.openclassroom.go4lunch.di.NearbyPlacesApiRequestSingleton;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
 import com.openclassroom.go4lunch.models.Result;
@@ -21,34 +22,27 @@ public class RetrofitStreams {
 
     public static Example nearbyPlaces;
 
-    public static Observable<Example> streamFetchNearbyRestaurant(String url, String location, String key){
-        JsonPlaceHolderApi jsonPlaceHolderApi = PlacesApiRequestSingleton.getInstance(url).getJsonPlaceHolderApi();
+    public static Observable<Example> streamFetchNearbyRestaurant(String location, String key){
+        JsonPlaceHolderApi jsonPlaceHolderApi = NearbyPlacesApiRequestSingleton.getInstanceNearbyPlaces().getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getExample(location, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);
     }
 
-    public static Observable<DetailsPlaces> streamFetchDetailRestaurant(String url, String placeId, String key){
-        try {
-            TimeUnit.MICROSECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        JsonPlaceHolderApi jsonPlaceHolderApi = PlacesApiRequestSingleton.getInstance(url).getJsonPlaceHolderApi();
+    public static Observable<DetailsPlaces> streamFetchDetailRestaurant(String placeId, String key){
+        JsonPlaceHolderApi jsonPlaceHolderApi = DetailsPlacesApiRequestSingleton.getInstanceDetailsPlaces().getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getPlaceDetails(placeId, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);
     }
 
-    public static Observable<List<DetailsPlaces>> getNearbyRestaurantThenFetchTheirDetails(String urlNearbyRestaurant,
-            String urlDetailsRestaurant, String location, String key){
-
-        return streamFetchNearbyRestaurant(urlNearbyRestaurant, location, key)
+    public static Observable<List<DetailsPlaces>> getNearbyRestaurantThenFetchTheirDetails(String location, String key){
+        return streamFetchNearbyRestaurant(location, key)
                 .map(example -> RetrofitStreams.setExampleAndReturnResult(example))
                 .flatMapIterable(results -> results)
-                .flatMap(result -> streamFetchDetailRestaurant(urlDetailsRestaurant, result.getPlaceId(), key ))
+                .flatMap(result -> streamFetchDetailRestaurant(result.getPlaceId(), key ))
                 .toList()
                 .toObservable();
     }

@@ -14,16 +14,22 @@ public class ResultDetailed implements Parcelable {
     @SerializedName("opening_hours")
     @Expose
     private OpeningHoursDetailed openingHours;
+    @SerializedName("place_id")
+    @Expose
+    private String place_id;
+
 
     protected ResultDetailed(Parcel in) {
         formattedAddress = in.readString();
         openingHours = in.readParcelable(OpeningHoursDetailed.class.getClassLoader());
+        place_id = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(formattedAddress);
         dest.writeParcelable(openingHours, flags);
+        dest.writeString(place_id);
     }
 
     @Override
@@ -59,4 +65,11 @@ public class ResultDetailed implements Parcelable {
         this.openingHours = openingHours;
     }
 
+    public String getPlace_id() {
+        return place_id;
+    }
+
+    public void setPlace_id(String place_id) {
+        this.place_id = place_id;
+    }
 }

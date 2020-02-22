@@ -1,10 +1,8 @@
-package com.openclassroom.go4lunch.ui;
+package com.openclassroom.go4lunch.ui.listRestaurant;
 
 
 import android.content.Context;
-import android.graphics.Color;
 import android.location.Location;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,9 +18,8 @@ import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
 import com.openclassroom.go4lunch.models.Period;
-import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -39,8 +35,11 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     private ArrayList<DetailsPlaces> detailsPlaces;
     private Context context;
     private Location lastKnownLocation;
+    private OnRestaurantListener onRestaurantListener;
+    private String parsedAddress;
+    private String restaurantTitle;
 
-    public class RestaurantViewHolder extends RecyclerView.ViewHolder {
+    public class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         @BindView(R.id.tv_restaurant_title)
         TextView tvRestaurantTitle;
@@ -57,17 +56,38 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         @BindView(R.id.iv_restaurant_picture)
         ImageView ivRestaurant;
 
-        public RestaurantViewHolder(View itemView) {
+        @BindView(R.id.iv_star_1)
+        ImageView ivStar1;
+
+        @BindView(R.id.iv_star_2)
+        ImageView ivStar2;
+
+        @BindView(R.id.iv_star_3)
+        ImageView ivStar3;
+
+        OnRestaurantListener onRestaurantListener;
+
+        public RestaurantViewHolder(View itemView, OnRestaurantListener onRestaurantListener) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+            this.onRestaurantListener = onRestaurantListener;
+        }
+
+        @Override
+        public void onClick(View v) {
+            onRestaurantListener.onRestaurantClick(getAdapterPosition());
         }
     }
 
-    public MyRestaurantAdapter(Location location, Example example, ArrayList<DetailsPlaces> detailsPlaces, Context context) {
+    public MyRestaurantAdapter(Location location, Example example,
+                               ArrayList<DetailsPlaces> detailsPlaces, Context context,
+    OnRestaurantListener onRestaurantListener) {
         this.example = example;
         this.detailsPlaces = detailsPlaces;
         this.context = context;
         this.lastKnownLocation = location;
+        this.onRestaurantListener = onRestaurantListener;
     }
 
     // Create new views (invoked by the layout manager)
@@ -77,7 +97,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.rv_restaurants_item, parent, false);
-        RestaurantViewHolder restaurantViewHolder = new RestaurantViewHolder(v);
+        RestaurantViewHolder restaurantViewHolder = new RestaurantViewHolder(v, onRestaurantListener);
         return  restaurantViewHolder;
 
     }
@@ -91,12 +111,15 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         int day = calendar.get(Calendar.DAY_OF_WEEK)-1;
 
         int hour = Integer.parseInt(calendar.get(Calendar.HOUR_OF_DAY) + "00");
+
         holder.tvRestaurantTitle.setText(example.getResults().get(position).getName());
         try{
             DetailsPlaces detailPlace = getGoodDetailPlace(example.getResults().get(position).getPlaceId());
-            holder.tvTypeAddress.setText(setAdress("", detailPlace.getResult().getFormattedAddress()));
+            parsedAddress = RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress());
+            holder.tvTypeAddress.setText(parsedAddress);
 
             if(example.getResults().get(position).getOpeningHours().getOpenNow()){
+                Log.d("a", "" + 1);
                 for(Period period : detailPlace.getResult().getOpeningHours().getPeriods()){
                     if(period.getOpen().getDay() == day){
                         if((hour >= Integer.parseInt(period.getOpen().getTime())) &&  (hour <= Integer.parseInt(period.getClose().getTime()))){
@@ -128,6 +151,19 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
                     .into(holder.ivRestaurant);
         }catch(NullPointerException e){
 
+        }
+
+
+        int rating = (int) Math.round(example.getResults().get(position).getRating());
+        if(rating >= 1 && rating <= 2){
+            holder.ivStar1.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+        }else if(rating >= 3 && rating <= 4){
+            holder.ivStar1.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+            holder.ivStar2.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+        }else if(rating == 5){
+            holder.ivStar1.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+            holder.ivStar2.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+            holder.ivStar3.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
         }
 
     }
@@ -162,5 +198,9 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     @Override
     public int getItemCount() {
         return example.getResults().size();
+    }
+
+    public interface OnRestaurantListener{
+        void onRestaurantClick(int position);
     }
 }

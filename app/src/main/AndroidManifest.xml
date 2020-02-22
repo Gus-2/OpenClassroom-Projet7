@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- Use the wifi or the cellular data to determine the device's location -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:allowBackup="true"
@@ -15,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.DetailsDescriptionRestaurant"
+            android:name=".ui.detaileRestaurant.DetailsRestaurantFragment"
             android:label="@string/title_activity_details_description_restaurant"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
@@ -23,7 +24,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/map_key" />
 
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.Go4Lunch">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

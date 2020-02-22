@@ -1,17 +1,14 @@
-package com.openclassroom.go4lunch.ui;
+package com.openclassroom.go4lunch.ui.detaileRestaurant;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.openclassroom.go4lunch.R;
-import com.openclassroom.go4lunch.models.Example;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

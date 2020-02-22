@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".ui.DetailsDescriptionRestaurant"
-    tools:showIn="@layout/activity_details_description_restaurant">
+    tools:context=".ui.detaileRestaurant.DetailsRestaurantFragment"
+    tools:showIn="@layout/details_description_restaurant">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -27,13 +27,14 @@
                     android:id="@+id/tv_info_restaurant_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="Title Restaurant"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="5dp"
                     android:textColor="@color/White"
                     android:textSize="18sp"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="5dp"/>
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Title Restaurant" />
+
 
                 <TextView
                     android:id="@+id/tv_info_restaurant_address"
@@ -50,6 +51,33 @@
                     app:layout_constraintTop_toBottomOf="@+id/tv_info_restaurant_title"
                     tools:text="Address Restaurant"
                     android:layout_marginBottom="20dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_detail_star_1"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintStart_toEndOf="@+id/tv_info_restaurant_title"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:src="@tools:sample/avatars" />
+
+                <ImageView
+                    android:id="@+id/iv_detail_star_2"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintStart_toEndOf="@+id/iv_detail_star_1"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:src="@tools:sample/avatars" />
+
+                <ImageView
+                    android:id="@+id/iv_detail_star_3"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintStart_toEndOf="@+id/iv_detail_star_2"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:src="@tools:sample/avatars" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

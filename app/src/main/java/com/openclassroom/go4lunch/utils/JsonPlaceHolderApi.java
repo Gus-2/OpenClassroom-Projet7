@@ -19,7 +19,7 @@ public interface JsonPlaceHolderApi {
             @Query("key") String key
     );
 
-    @GET("json?fields=formatted_address,opening_hours,place_id")
+    @GET("json?fields=website,international_phone_number,formatted_address,opening_hours,place_id")
     Observable<DetailsPlaces> getPlaceDetails(
         @Query("place_id") String placeId,
         @Query("key") String key

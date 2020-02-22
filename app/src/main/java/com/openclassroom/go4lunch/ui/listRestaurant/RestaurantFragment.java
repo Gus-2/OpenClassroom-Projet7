@@ -1,12 +1,10 @@
-package com.openclassroom.go4lunch.ui;
+package com.openclassroom.go4lunch.ui.listRestaurant;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,13 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
 
 import java.util.ArrayList;
 
 /**
  * Created by de Meeûs Augustin on 2020-01-20
  **/
-public class RestaurantFragment extends Fragment {
+public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.OnRestaurantListener{
 
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView.Adapter mAdapter;
@@ -45,7 +44,7 @@ public class RestaurantFragment extends Fragment {
         lastKnownLocation = getArguments().getParcelable("Location");
 
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new MyRestaurantAdapter(lastKnownLocation, nearbyPlaces, detailsPlaces, getActivity());
+        mAdapter = new MyRestaurantAdapter(lastKnownLocation, nearbyPlaces, detailsPlaces, getActivity(), this);
         recyclerView.setAdapter(mAdapter);
 
         return rootView;
@@ -53,4 +52,12 @@ public class RestaurantFragment extends Fragment {
     }
 
 
+    @Override
+    public void onRestaurantClick(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("Position", position);
+        DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
+        detailsRestaurantFragment.setArguments(bundle);
+        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();
+    }
 }

@@ -1,4 +1,4 @@
-package com.openclassroom.go4lunch.ui;
+package com.openclassroom.go4lunch.ui.map;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,13 +22,17 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.Example;
 import com.openclassroom.go4lunch.models.Result;
-import com.openclassroom.go4lunch.ui.MainActivity;
+import com.openclassroom.go4lunch.ui.Go4Lunch;
+import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
+
+import java.util.HashMap;
 
 
 /**
@@ -47,7 +51,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private Example nearbyLocation;
     private boolean mLocationGranted;
     private Location mLastKnownLocation;
-
+    private HashMap<String, Integer> markers;
 
 
     private FloatingActionButton locateUseerButton;
@@ -60,16 +64,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
         bundle = getArguments();
         if( bundle == null){
-            nearbyLocation = ((MainActivity) getActivity()).getNearbyLocations();
-            mLocationGranted = ((MainActivity) getActivity()).getLocationGranted();
-            mLastKnownLocation = ((MainActivity) getActivity()).getLocation();
+            nearbyLocation = ((Go4Lunch) getActivity()).getNearbyLocations();
+            mLocationGranted = ((Go4Lunch) getActivity()).getLocationGranted();
+            mLastKnownLocation = ((Go4Lunch) getActivity()).getLocation();
         }else{
             nearbyLocation = getArguments().getParcelable("NearbyLocation");
             mLocationGranted = bundle.getBoolean("LocationGranted");
             mLastKnownLocation = bundle.getParcelable("Location");
         }
 
-
+        markers = new HashMap<>();
     }
 
     @Nullable
@@ -149,14 +153,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         displayTheRestaurantsNearby(googleMap);
 
         moveToWhereUserIsLocated();
+
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle bundle = new Bundle();
+                bundle.putInt("Position", markers.get(marker.getId()));
+                DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
+                detailsRestaurantFragment.setArguments(bundle);
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();
+                return false;
+            }
+        });
     }
 
     public void displayTheRestaurantsNearby(GoogleMap map){
         Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.red_marker);
         BitmapDescriptor markerIconDescriptor = BitmapDescriptorFactory.fromBitmap(markerIcon);
-        for(Result result : nearbyLocation.getResults()){
-            map.addMarker(new MarkerOptions().position(new LatLng(result.getGeometry().getLocation().getLat(),
-                    result.getGeometry().getLocation().getLng()))).setIcon(markerIconDescriptor);
+        for(int i = 0; i < nearbyLocation.getResults().size(); i++){
+            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
+                    nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptor);
+            Marker marker = map.addMarker(markerOptions);
+            markers.put(marker.getId(), i);
         }
     }
 

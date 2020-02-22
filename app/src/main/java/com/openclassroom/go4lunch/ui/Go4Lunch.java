@@ -25,6 +25,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -35,6 +37,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
+import com.openclassroom.go4lunch.ui.drawerMenu.YourLunchFragment;
+import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
+import com.openclassroom.go4lunch.ui.map.MapFragment;
+import com.openclassroom.go4lunch.ui.workmates.WorkmatesFragment;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
 
 import java.util.ArrayList;
@@ -44,7 +51,7 @@ import java.util.List;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-public class MainActivity extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
+public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
 
     private static final int RC_SIGN_IN = 123;
 
@@ -71,9 +78,6 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /*Intent intent = new Intent(this, DetailsDescriptionRestaurant.class);
-        startActivity(intent);*/
 
         getLocationPermission();
 
@@ -103,6 +107,10 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
 
     public Example getNearbyLocations() {
         return nearbyLocations;
+    }
+
+    public DetailsPlaces getDetailsPlaces(int position){
+        return detailsPlaces.get(position);
     }
 
     public Location getLocation(){
@@ -200,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
                                 // user is now signed out
-                                startActivity(new Intent(MainActivity.this, MainActivity.class));
+                                startActivity(new Intent(Go4Lunch.this, Go4Lunch.class));
                                 finish();
                             }
                         });
@@ -279,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
                             @Override
                             public void onComplete(@NonNull Task<Location> task) {
                                 if (task.isSuccessful()) {
-                                    MainActivity.this.mLastKnownLocation = task.getResult();
+                                    Go4Lunch.this.mLastKnownLocation = task.getResult();
                                     executeHttpRequestWithRetrofit(task.getResult().getLatitude() + "," + task.getResult().getLongitude());
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Veuillez autoriser la locations de l'appareil via les paramètres", Toast.LENGTH_LONG);
@@ -328,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
 
             @Override
             public void onNext(List<DetailsPlaces> detailsPlaces) {
-                MainActivity.this.detailsPlaces = detailsPlaces;
+                Go4Lunch.this.detailsPlaces = detailsPlaces;
             }
 
             @Override
@@ -338,9 +346,11 @@ public class MainActivity extends AppCompatActivity implements  NavigationView.O
 
             @Override
             public void onComplete() {
-                MainActivity.this.nearbyLocations = RetrofitStreams.nearbyPlaces;
+                Go4Lunch.this.nearbyLocations = RetrofitStreams.nearbyPlaces;
                 startDefaultFragment();
             }
         });
     }
+
+
 }

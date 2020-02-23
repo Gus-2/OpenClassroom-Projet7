@@ -26,8 +26,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.openclassroom.go4lunch.R;
-import com.openclassroom.go4lunch.models.Example;
-import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
@@ -48,10 +47,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private MapView mapView;
     private GoogleMap map;
 
-    private Example nearbyLocation;
+    private NearbyPlaces nearbyLocation;
     private boolean mLocationGranted;
     private Location mLastKnownLocation;
-    private HashMap<String, Integer> markers;
+    private HashMap<String, String> markers;
 
 
     private FloatingActionButton locateUseerButton;
@@ -87,9 +86,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     private void initGoogleMap(Bundle savedInstanceState){
-        // *** IMPORTANT ***
-        // MapView requires that the Bundle you pass contain _ONLY_ MapView SDK
-        // objects or sub-Bundles.
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
@@ -158,11 +154,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             @Override
             public boolean onMarkerClick(Marker marker) {
                 Bundle bundle = new Bundle();
-                bundle.putInt("Position", markers.get(marker.getId()));
+                bundle.putString("PlaceID", markers.get(marker.getId()));
                 DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
                 detailsRestaurantFragment.setArguments(bundle);
                 getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();
-                return false;
+                return  true;
             }
         });
     }
@@ -174,7 +170,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
                     nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptor);
             Marker marker = map.addMarker(markerOptions);
-            markers.put(marker.getId(), i);
+            markers.put(marker.getId(), nearbyLocation.getResults().get(i).getPlaceId());
         }
     }
 

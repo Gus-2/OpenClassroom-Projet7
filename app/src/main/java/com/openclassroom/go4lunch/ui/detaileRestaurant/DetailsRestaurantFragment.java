@@ -21,7 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
-import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 
@@ -37,16 +37,22 @@ public class DetailsRestaurantFragment extends Fragment {
     private ImageView ivDetailStar1;
     private ImageView ivDetailStar2;
     private ImageView ivDetailStar3;
+    private String placeID;
+    private NearbyPlaces nearbyPlaces;
+    private DetailsPlaces detailPlace;
     private int position;
-    private DetailsPlaces detailsPlaces;
-    private Example nearbyPlaces;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        position = getArguments().getInt("Position");
-        detailsPlaces = ((Go4Lunch) getActivity()).getDetailsPlaces(position);
-        nearbyPlaces = ((Go4Lunch) getActivity()).getNearbyLocations();
+        try {
+            placeID = getArguments().getString("PlaceID");
+            nearbyPlaces = ((Go4Lunch) getActivity()).getNearbyLocations();
+        }catch (NullPointerException e){
+            Toast.makeText(getActivity(), "Error retrieving data", Toast.LENGTH_SHORT).show();
+        }
+        detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(), placeID);
+        position = RestaurantDetailFormat.getPositionFromPlaceID(nearbyPlaces, placeID);
     }
 
     @Nullable
@@ -63,8 +69,8 @@ public class DetailsRestaurantFragment extends Fragment {
         ivDetailStar2 = view.findViewById(R.id.iv_detail_star_2);
         ivDetailStar3 = view.findViewById(R.id.iv_detail_star_3);
 
-        tvRestaurantTitle.setText(((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position).getName());
-        tvRestaurantAddress.setText(RestaurantDetailFormat.parseAddress("", detailsPlaces.getResult().getFormattedAddress()));
+        tvRestaurantTitle.setText(nearbyPlaces.getResults().get(position).getName());
+        tvRestaurantAddress.setText(RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress()));
 
         ((Go4Lunch) getActivity()).getSupportActionBar().hide();
 
@@ -77,7 +83,7 @@ public class DetailsRestaurantFragment extends Fragment {
                     .load(url)
                     .into(ivRestaurant);
         }catch(NullPointerException e){
-
+            Toast.makeText(getActivity(), "Image unavailable !", Toast.LENGTH_SHORT).show();
         }
 
         int rating = (int) Math.round(nearbyPlaces.getResults().get(position).getRating());
@@ -102,7 +108,6 @@ public class DetailsRestaurantFragment extends Fragment {
         tvInfoRestaurantWeb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("Hi", "hpzede");
                 startWebsite();
             }
         });
@@ -115,24 +120,24 @@ public class DetailsRestaurantFragment extends Fragment {
         ((Go4Lunch) getActivity()).getSupportActionBar().show();
     }
 
-    public void startPhoneCall(String phoneNumber){
+    private void startPhoneCall(String phoneNumber){
         Intent callIntent = new Intent(Intent.ACTION_CALL);
         callIntent.setData(Uri.parse("tel:"+phoneNumber));
         startActivity(callIntent);
     }
 
-    public void startWebsite(){
+    private void startWebsite(){
         try{
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(detailsPlaces.getResult().getWebsite())));
+            String website = detailPlace.getResult().getWebsite();
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(website)));
         }catch(NullPointerException e){
-            Toast.makeText(getActivity(), "Pas de site web disponible", Toast.LENGTH_SHORT);
+            Toast.makeText(getActivity(), "Pas de site web disponible", Toast.LENGTH_SHORT).show();
         }
-
     }
 
-    public void requestPhonePermission(){
+    private void requestPhonePermission(){
         if (ContextCompat.checkSelfPermission(getActivity(), CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-            startPhoneCall(detailsPlaces.getResult().getInternationalPhoneNumber());
+            startPhoneCall(detailPlace.getResult().getInternationalPhoneNumber());
         } else {
             requestPermissions(new String[]{CALL_PHONE}, 1);
         }

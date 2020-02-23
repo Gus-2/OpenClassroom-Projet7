@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
-import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Period;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 
@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
  **/
 public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapter.RestaurantViewHolder> {
 
-    private Example example;
+    private NearbyPlaces nearbyPlaces;
     private ArrayList<DetailsPlaces> detailsPlaces;
     private Context context;
     private Location lastKnownLocation;
@@ -80,10 +80,10 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         }
     }
 
-    public MyRestaurantAdapter(Location location, Example example,
+    public MyRestaurantAdapter(Location location, NearbyPlaces nearbyPlaces,
                                ArrayList<DetailsPlaces> detailsPlaces, Context context,
     OnRestaurantListener onRestaurantListener) {
-        this.example = example;
+        this.nearbyPlaces = nearbyPlaces;
         this.detailsPlaces = detailsPlaces;
         this.context = context;
         this.lastKnownLocation = location;
@@ -112,13 +112,13 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
 
         int hour = Integer.parseInt(calendar.get(Calendar.HOUR_OF_DAY) + "00");
 
-        holder.tvRestaurantTitle.setText(example.getResults().get(position).getName());
+        holder.tvRestaurantTitle.setText(nearbyPlaces.getResults().get(position).getName());
         try{
-            DetailsPlaces detailPlace = getGoodDetailPlace(example.getResults().get(position).getPlaceId());
+            DetailsPlaces detailPlace = getGoodDetailPlace(nearbyPlaces.getResults().get(position).getPlaceId());
             parsedAddress = RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress());
             holder.tvTypeAddress.setText(parsedAddress);
 
-            if(example.getResults().get(position).getOpeningHours().getOpenNow()){
+            if(nearbyPlaces.getResults().get(position).getOpeningHours().getOpenNow()){
                 Log.d("a", "" + 1);
                 for(Period period : detailPlace.getResult().getOpeningHours().getPeriods()){
                     if(period.getOpen().getDay() == day){
@@ -139,11 +139,11 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
             holder.tvOpeningTime.setTextColor(ContextCompat.getColor(context, R.color.police_color));
         }
 
-        holder.tvDistance.setText("" + getDistanceBetweenTwoPoints(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), example.getResults().get(position).getGeometry().getLocation().getLat(), example.getResults().get(position).getGeometry().getLocation().getLng()) + " m");
+        holder.tvDistance.setText("" + getDistanceBetweenTwoPoints(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLat(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLng()) + " m");
 
         try{
             String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&maxHeight=400&" +
-                    "photoreference=" + example.getResults().get(position).getPhotos().get(0).getPhotoReference() +
+                    "photoreference=" + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() +
                     "&key=AIzaSyAuYS7_WKfOe_Fztg-KdOoai7idmVrCWn8";
 
             Glide.with(context)
@@ -154,7 +154,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         }
 
 
-        int rating = (int) Math.round(example.getResults().get(position).getRating());
+        int rating = (int) Math.round(nearbyPlaces.getResults().get(position).getRating());
         if(rating >= 1 && rating <= 2){
             holder.ivStar1.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
         }else if(rating >= 3 && rating <= 4){
@@ -185,19 +185,9 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         return (int) distance[0];
     }
 
-
-
-
-    private String setAdress(String type, String addressWithCountry){
-        String address = addressWithCountry.substring(0, addressWithCountry.indexOf(","));
-        String numberRestaurant = address.substring(address.lastIndexOf(" ")+1, address.length());
-        return numberRestaurant + " " + (address.substring(0, address.lastIndexOf(" ")).toLowerCase());
-    }
-
-
     @Override
     public int getItemCount() {
-        return example.getResults().size();
+        return nearbyPlaces.getResults().size();
     }
 
     public interface OnRestaurantListener{

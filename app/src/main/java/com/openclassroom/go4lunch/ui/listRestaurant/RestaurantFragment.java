@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
-import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
 
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView.Adapter mAdapter;
-    private Example nearbyPlaces;
+    private NearbyPlaces nearbyPlaces;
     private RecyclerView recyclerView;
     private ArrayList<DetailsPlaces> detailsPlaces;
     private Location lastKnownLocation;
@@ -55,7 +55,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
     @Override
     public void onRestaurantClick(int position) {
         Bundle bundle = new Bundle();
-        bundle.putInt("Position", position);
+        bundle.putString("PlaceID", nearbyPlaces.getResults().get(position).getPlaceId());
         DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
         detailsRestaurantFragment.setArguments(bundle);
         getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();

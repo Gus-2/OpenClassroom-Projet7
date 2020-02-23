@@ -1,11 +1,9 @@
 package com.openclassroom.go4lunch.utils;
 
-import android.util.Log;
-
 import com.openclassroom.go4lunch.di.DetailsPlacesApiRequestSingleton;
 import com.openclassroom.go4lunch.di.NearbyPlacesApiRequestSingleton;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
-import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 
 import java.util.List;
@@ -20,9 +18,9 @@ import io.reactivex.schedulers.Schedulers;
  **/
 public class RetrofitStreams {
 
-    public static Example nearbyPlaces;
+    public static NearbyPlaces nearbyPlaces;
 
-    public static Observable<Example> streamFetchNearbyRestaurant(String location, String key){
+    public static Observable<NearbyPlaces> streamFetchNearbyRestaurant(String location, String key){
         JsonPlaceHolderApi jsonPlaceHolderApi = NearbyPlacesApiRequestSingleton.getInstanceNearbyPlaces().getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getExample(location, key)
                 .subscribeOn(Schedulers.io())
@@ -47,9 +45,9 @@ public class RetrofitStreams {
                 .toObservable();
     }
 
-    private static List<Result> setExampleAndReturnResult(Example example){
-        nearbyPlaces = example;
-        return example.getResults();
+    private static List<Result> setExampleAndReturnResult(NearbyPlaces nearbyPlaces){
+        RetrofitStreams.nearbyPlaces = nearbyPlaces;
+        return nearbyPlaces.getResults();
     }
 
 

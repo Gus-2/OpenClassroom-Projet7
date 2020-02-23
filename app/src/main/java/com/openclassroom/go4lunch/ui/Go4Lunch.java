@@ -25,8 +25,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -36,7 +34,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
-import com.openclassroom.go4lunch.models.Example;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
 import com.openclassroom.go4lunch.ui.drawerMenu.YourLunchFragment;
 import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
@@ -65,14 +63,9 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     private boolean mLocationPermissionGranted;
     public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION =1;
     private Location mLastKnownLocation;
-    private Example nearbyLocations;
+    private NearbyPlaces nearbyLocations;
     private Disposable disposable;
     private List<DetailsPlaces> detailsPlaces;
-
-
-    public void setNearbyLocations(Example example){
-        nearbyLocations = example;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,12 +98,16 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
     }
 
-    public Example getNearbyLocations() {
+    public NearbyPlaces getNearbyLocations() {
         return nearbyLocations;
     }
 
     public DetailsPlaces getDetailsPlaces(int position){
         return detailsPlaces.get(position);
+    }
+
+    public List<DetailsPlaces> getDetailsPlaces(){
+        return detailsPlaces;
     }
 
     public Location getLocation(){

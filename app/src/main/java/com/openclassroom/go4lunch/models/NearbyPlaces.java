@@ -8,12 +8,10 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
-public class Example implements Parcelable {
+public class NearbyPlaces implements Parcelable {
 
     @SerializedName("html_attributions")
     @Expose
@@ -30,7 +28,7 @@ public class Example implements Parcelable {
     @Expose
     private String status;
 
-    public Example(Parcel in) {
+    public NearbyPlaces(Parcel in) {
         nextPageToken = in.readString();
         status = in.readString();
     }
@@ -46,15 +44,15 @@ public class Example implements Parcelable {
         return 0;
     }
 
-    public static final Creator<Example> CREATOR = new Creator<Example>() {
+    public static final Creator<NearbyPlaces> CREATOR = new Creator<NearbyPlaces>() {
         @Override
-        public Example createFromParcel(Parcel in) {
-            return new Example(in);
+        public NearbyPlaces createFromParcel(Parcel in) {
+            return new NearbyPlaces(in);
         }
 
         @Override
-        public Example[] newArray(int size) {
-            return new Example[size];
+        public NearbyPlaces[] newArray(int size) {
+            return new NearbyPlaces[size];
         }
     };
 

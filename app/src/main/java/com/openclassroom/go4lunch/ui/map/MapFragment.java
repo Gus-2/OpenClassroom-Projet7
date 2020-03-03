@@ -26,9 +26,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
+import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
-import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
+import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
+import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 
 import java.util.HashMap;
@@ -42,33 +45,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     private final int DEFAULT_ZOOM = 18;
-    private Bundle bundle;
 
     private MapView mapView;
     private GoogleMap map;
 
     private NearbyPlaces nearbyLocation;
-    private boolean mLocationGranted;
     private Location mLastKnownLocation;
     private HashMap<String, String> markers;
-
-
-    private FloatingActionButton locateUseerButton;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SecurityChecks.CheckGooglePlayServices(getContext());
+        SecurityChecks.checkGooglePlayServices(getContext());
 
-        bundle = getArguments();
+        Bundle bundle = getArguments();
         if( bundle == null){
             nearbyLocation = ((Go4Lunch) getActivity()).getNearbyLocations();
-            mLocationGranted = ((Go4Lunch) getActivity()).getLocationGranted();
             mLastKnownLocation = ((Go4Lunch) getActivity()).getLocation();
         }else{
             nearbyLocation = getArguments().getParcelable("NearbyLocation");
-            mLocationGranted = bundle.getBoolean("LocationGranted");
             mLastKnownLocation = bundle.getParcelable("Location");
         }
 
@@ -101,21 +97,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             return;
         }
         try {
-            if (mLocationGranted) {
-                map.setMyLocationEnabled(true);
-                setUiMapSettings();
-            } else {
-                map.setMyLocationEnabled(false);
-
-            }
-
-
+            map.setMyLocationEnabled(true);
+            setUiMapSettings();
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
     }
 
-    public void setUiMapSettings(){
+    private void setUiMapSettings(){
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
     }
@@ -153,17 +142,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                Bundle bundle = new Bundle();
-                bundle.putString("PlaceID", markers.get(marker.getId()));
-                DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
-                detailsRestaurantFragment.setArguments(bundle);
-                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();
+                int position = RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) getActivity()).getNearbyLocations(), markers.get(marker.getId()));
+                Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
+                DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(),((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position).getPlaceId());
+                intent.putExtra("DetailPlace", detailPlace);
+                Result result = ((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position);
+                intent.putExtra("Result", result);
+                startActivity(intent);
                 return  true;
             }
         });
     }
 
-    public void displayTheRestaurantsNearby(GoogleMap map){
+    private void displayTheRestaurantsNearby(GoogleMap map){
         Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.red_marker);
         BitmapDescriptor markerIconDescriptor = BitmapDescriptorFactory.fromBitmap(markerIcon);
         for(int i = 0; i < nearbyLocation.getResults().size(); i++){
@@ -174,8 +165,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
 
-    public void displayTheLocateButton(){
-        locateUseerButton = getView().findViewById(R.id.float_button_locate_user);
+    private void displayTheLocateButton(){
+        FloatingActionButton locateUseerButton = getView().findViewById(R.id.float_button_locate_user);
         locateUseerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,7 +175,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         });
     }
 
-    public void moveToWhereUserIsLocated(){
+    private void moveToWhereUserIsLocated(){
+
         map.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));

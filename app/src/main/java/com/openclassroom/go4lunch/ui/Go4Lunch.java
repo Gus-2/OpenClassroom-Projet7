@@ -17,22 +17,24 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
@@ -41,11 +43,13 @@ import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
 import com.openclassroom.go4lunch.ui.map.MapFragment;
 import com.openclassroom.go4lunch.ui.workmates.WorkmatesFragment;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
+import com.openclassroom.go4lunch.utils.SecurityChecks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -55,75 +59,39 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
-    private NavigationView navigationView;
     private BottomNavigationView bottomNavigationView;
-    // Responsible for fetching the current location of the device
     private FusedLocationProviderClient mFusedLocationProviderClient;
-    private PlacesClient placesClient;
-    private boolean mLocationPermissionGranted;
     public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION =1;
     private Location mLastKnownLocation;
     private NearbyPlaces nearbyLocations;
-    private Disposable disposable;
     private List<DetailsPlaces> detailsPlaces;
+    TextView tvDrawerTvUserMail;
+    TextView tvDrawerTvUserNameFirstname;
+    CircleImageView ivDrawerImagerUser;
+    private Disposable disposable;
+    FirebaseUser user;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        getLocationPermission();
-
-        checkGooglePlayServices();
-
-        startSignInActivity();
-
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user == null){
+            startSignInActivity();
+        }else{
+            startActivity();
+        }
         drawerLayout = findViewById(R.id.activity_main_drawer_layout);
-
-        bottomNavigationView = findViewById(R.id.activity_main_bottom_navigation);
-
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        Places.initialize(this, getResources().getString(R.string.map_key));
-        placesClient = Places.createClient(this);
-
-        this.configureNavigationBottom();
-
-        this.configureToolBar();
-
-        this.configureDrawerLayout();
-
-        this.configureNavigationView();
-
-        getDeviceLocation();
-
     }
 
-    public NearbyPlaces getNearbyLocations() {
-        return nearbyLocations;
-    }
 
-    public DetailsPlaces getDetailsPlaces(int position){
-        return detailsPlaces.get(position);
-    }
-
-    public List<DetailsPlaces> getDetailsPlaces(){
-        return detailsPlaces;
-    }
-
-    public Location getLocation(){
-        getDeviceLocation();
-        return mLastKnownLocation;
-    }
-
-    public boolean getLocationGranted(){
-        return mLocationPermissionGranted;
-    }
 
     private void startDefaultFragment(){
         Bundle bundle = new Bundle();
 
         bundle.putParcelable("Location", mLastKnownLocation);
-        bundle.putBoolean("LocationGranted", mLocationPermissionGranted);
         bundle.putParcelable("NearbyLocation", nearbyLocations);
 
         MapFragment mapFragment = new MapFragment();
@@ -148,10 +116,89 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 RC_SIGN_IN);
     }
 
+    public void getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            startActivity();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            Toast.makeText(this, getResources().getString(R.string.allow_location_permission), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startActivity();
+            } else {
+                Log.d("Permission", "Unauthorised !");
+            }
+        }
+    }
+
+
+
+    public void startActivity(){
+        SecurityChecks.checkGooglePlayServices(getApplicationContext());
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        Places.initialize(this, getResources().getString(R.string.map_key));
+        Places.createClient(this);
+        bottomNavigationView = findViewById(R.id.activity_main_bottom_navigation);
+
+        this.configureNavigationBottom();
+        this.configureToolBar();
+        this.configureDrawerLayout();
+        this.configureNavigationView();
+
+        NavigationView navigationView = findViewById(R.id.activity_main_nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        tvDrawerTvUserMail = headerView.findViewById(R.id.drawer_tv_user_mail);
+        tvDrawerTvUserNameFirstname = headerView.findViewById(R.id.drawer_tv_user_name_firstname);
+        ivDrawerImagerUser = headerView.findViewById(R.id.drawer_iv_image_user);
+        tvDrawerTvUserNameFirstname.setText(user.getDisplayName());
+        tvDrawerTvUserMail.setText(user.getEmail());
+        Glide.with(this)
+                .load(user.getPhotoUrl())
+                .into(ivDrawerImagerUser);
+        getDeviceLocation();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        this.handleResponseAfterSignIn(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            this.handleResponseAfterSignIn(requestCode, resultCode, data);
+            if (resultCode == RESULT_OK) {
+                user = FirebaseAuth.getInstance().getCurrentUser();
+                if(user != null){
+                    checkIfUserIsInDataBase();
+                }
+                getLocationPermission();
+            } else {
+                startSignInActivity();
+            }
+        }
+    }
+
+    public void checkIfUserIsInDataBase(){
+
+        FirebaseHelper.getUserData(user.getUid()).addOnCompleteListener(task -> {
+            if(task.isSuccessful()) {
+                    if(task.getResult() != null && task.getResult().size() != 1)
+                    createUserIntoDataBase();
+            }
+        });
+    }
+
+    public void createUserIntoDataBase(){
+        FirebaseHelper.createUser(user.getUid(), user.getDisplayName()).addOnCompleteListener(task -> Toast.makeText(getApplicationContext(), "User is added !", Toast.LENGTH_SHORT).show());
     }
 
     private void showSnackBar(DrawerLayout drawerLayout, String message){
@@ -163,14 +210,14 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
         if(requestCode == RC_SIGN_IN){
-            if(resultCode == RESULT_OK){ // SUCCESS
+            if(resultCode == RESULT_OK){
                 showSnackBar(this.drawerLayout, getString(R.string.connection_secceded));
-            }else{ // ERRORS
+            }else{
                 if(response == null){
                     showSnackBar(this.drawerLayout, getString(R.string.error_authentification_canceled));
-                }else if(response.getError().getErrorCode() == ErrorCodes.NO_NETWORK){
+                }else if(response.getError() != null && response.getError().getErrorCode() == ErrorCodes.NO_NETWORK){
                     showSnackBar(this.drawerLayout, getString(R.string.error_no_internet));
-                }else if(response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR){
+                }else if(response.getError() != null && response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR){
                     showSnackBar(this.drawerLayout, getString(R.string.error_unknow_error));
                 }
             }
@@ -202,12 +249,9 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
             case R.id.activity_main_drawer_logout :
                 AuthUI.getInstance()
                         .signOut(this)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            public void onComplete(@NonNull Task<Void> task) {
-                                // user is now signed out
-                                startActivity(new Intent(Go4Lunch.this, Go4Lunch.class));
-                                finish();
-                            }
+                        .addOnCompleteListener(task -> {
+                            startActivity(new Intent(Go4Lunch.this, Go4Lunch.class));
+                            finish();
                         });
                 break;
             default:
@@ -231,104 +275,37 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         toggle.syncState();
     }
 
-    // 3 - Configure NavigationView
     private void configureNavigationView(){
-        this.navigationView = findViewById(R.id.activity_main_nav_view);
+        NavigationView navigationView = findViewById(R.id.activity_main_nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setItemIconTintList(null);
     }
 
     private void configureNavigationBottom(){
-        this.bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                if(menuItem.getItemId() == R.id.action_map){
-                    startDefaultFragment();
-                    return true;
-                } else if (menuItem.getItemId() == R.id.action_restaurant){
-                    RestaurantFragment restaurantFragment = new RestaurantFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putParcelable("NearbyPlaces", nearbyLocations);
-                    bundle.putParcelableArrayList("DetailsPlaces", (ArrayList<? extends Parcelable>) detailsPlaces);
-                    bundle.putParcelable("Location", mLastKnownLocation);
-                    restaurantFragment.setArguments(bundle);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
-                    return true;
-                } else if (menuItem.getItemId() == R.id.action_workmate){
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WorkmatesFragment()).commit();
-                    return true;
-                }
-                return false;
-            }
-        });
-    }
-
-    private boolean checkGooglePlayServices() {
-        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-        int result = googleAPI.isGooglePlayServicesAvailable(this);
-        if(result != ConnectionResult.SUCCESS) {
-            if(googleAPI.isUserResolvableError(result)) {
-                googleAPI.getErrorDialog(this, result,
-                        0).show();
+        this.bottomNavigationView.setOnNavigationItemSelectedListener(menuItem -> {
+            if(menuItem.getItemId() == R.id.action_map){
+                startDefaultFragment();
+                return true;
+            } else if (menuItem.getItemId() == R.id.action_restaurant){
+                RestaurantFragment restaurantFragment = new RestaurantFragment();
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("NearbyPlaces", nearbyLocations);
+                bundle.putParcelableArrayList("DetailsPlaces", (ArrayList<? extends Parcelable>) detailsPlaces);
+                bundle.putParcelable("Location", mLastKnownLocation);
+                restaurantFragment.setArguments(bundle);
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
+                return true;
+            } else if (menuItem.getItemId() == R.id.action_workmate){
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WorkmatesFragment()).commit();
+                return true;
             }
             return false;
-        }
-        return true;
-    }
-
-    private synchronized void getDeviceLocation() {
-        try {
-            if (mLocationPermissionGranted) {
-                mFusedLocationProviderClient.getLastLocation()
-                        .addOnCompleteListener(new OnCompleteListener<Location>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Location> task) {
-                                if (task.isSuccessful()) {
-                                    Go4Lunch.this.mLastKnownLocation = task.getResult();
-                                    executeHttpRequestWithRetrofit(task.getResult().getLatitude() + "," + task.getResult().getLongitude());
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Veuillez autoriser la locations de l'appareil via les paramètres", Toast.LENGTH_LONG);
-                                }
-                            }
-                        });
-            }
-        } catch(SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
-
-    }
-
-
-    private void getLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                }
-            }
-        }
+        });
     }
 
     private void executeHttpRequestWithRetrofit(String location){
 
-        this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails(
+         this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails(
                 location,getResources().getString(R.string.map_key)).subscribeWith(new DisposableObserver<List<DetailsPlaces>>(){
 
             @Override
@@ -338,7 +315,8 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
             @Override
             public void onError(Throwable e) {
-
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.error_retrieving_data), Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
             }
 
             @Override
@@ -350,4 +328,42 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     }
 
 
+    private void getDeviceLocation() {
+        try {
+            mFusedLocationProviderClient.getLastLocation()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Go4Lunch.this.mLastKnownLocation = task.getResult();
+                        if(task.getResult() != null){
+
+                            executeHttpRequestWithRetrofit(task.getResult().getLatitude() + "," + task.getResult().getLongitude());
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.error_get_location), Toast.LENGTH_LONG).show();
+                    }
+                });
+
+        } catch(SecurityException e)  {
+            e.printStackTrace();
+        }
+    }
+
+    public NearbyPlaces getNearbyLocations() {
+        return nearbyLocations;
+    }
+
+    public List<DetailsPlaces> getDetailsPlaces(){
+        return detailsPlaces;
+    }
+
+    public Location getLocation(){
+        getDeviceLocation();
+        return mLastKnownLocation;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disposable.dispose();
+    }
 }

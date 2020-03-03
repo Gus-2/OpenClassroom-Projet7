@@ -16,7 +16,7 @@ public class ResultDetailed implements Parcelable {
     private OpeningHoursDetailed openingHours;
     @SerializedName("place_id")
     @Expose
-    private String place_id;
+    private String placeId;
     @SerializedName("international_phone_number")
     @Expose
     private String internationalPhoneNumber;
@@ -28,7 +28,7 @@ public class ResultDetailed implements Parcelable {
     protected ResultDetailed(Parcel in) {
         formattedAddress = in.readString();
         openingHours = in.readParcelable(OpeningHoursDetailed.class.getClassLoader());
-        place_id = in.readString();
+        placeId = in.readString();
         internationalPhoneNumber = in.readString();
         website = in.readString();
     }
@@ -37,7 +37,7 @@ public class ResultDetailed implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(formattedAddress);
         dest.writeParcelable(openingHours, flags);
-        dest.writeString(place_id);
+        dest.writeString(placeId);
         dest.writeString(internationalPhoneNumber);
         dest.writeString(website);
     }
@@ -75,12 +75,12 @@ public class ResultDetailed implements Parcelable {
         this.openingHours = openingHours;
     }
 
-    public String getPlace_id() {
-        return place_id;
+    public String getPlaceId() {
+        return placeId;
     }
 
-    public void setPlace_id(String place_id) {
-        this.place_id = place_id;
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
     }
 
     public String getInternationalPhoneNumber() {

@@ -11,15 +11,13 @@ import com.google.android.gms.common.GoogleApiAvailability;
  **/
 public class SecurityChecks {
 
-    public static boolean CheckGooglePlayServices(Context context) {
+    public static void checkGooglePlayServices(Context context) {
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int result = googleAPI.isGooglePlayServicesAvailable(context);
         if(result != ConnectionResult.SUCCESS) {
             if(googleAPI.isUserResolvableError(result)) {
                 Toast.makeText(context, "Erreur : GooglePlaService is unavailable !", Toast.LENGTH_SHORT);
             }
-            return false;
         }
-        return true;
     }
 }

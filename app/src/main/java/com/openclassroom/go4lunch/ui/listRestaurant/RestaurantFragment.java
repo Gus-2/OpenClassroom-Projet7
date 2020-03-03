@@ -1,5 +1,6 @@
 package com.openclassroom.go4lunch.ui.listRestaurant;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
+import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.ui.Go4Lunch;
+import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailsRestaurantFragment;
+import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 
 import java.util.ArrayList;
 
@@ -24,27 +29,23 @@ import java.util.ArrayList;
  **/
 public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.OnRestaurantListener{
 
-    private RecyclerView.LayoutManager layoutManager;
-    private RecyclerView.Adapter mAdapter;
     private NearbyPlaces nearbyPlaces;
-    private RecyclerView recyclerView;
     private ArrayList<DetailsPlaces> detailsPlaces;
-    private Location lastKnownLocation;
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.restaurants_fragment, container, false);
-        layoutManager = new LinearLayoutManager(getActivity());
-        recyclerView = rootView.findViewById(R.id.rv_restaurants);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        RecyclerView recyclerView = rootView.findViewById(R.id.rv_restaurants);
 
         nearbyPlaces = getArguments().getParcelable("NearbyPlaces");
         detailsPlaces = getArguments().getParcelableArrayList("DetailsPlaces");
-        lastKnownLocation = getArguments().getParcelable("Location");
+        Location lastKnownLocation = getArguments().getParcelable("Location");
 
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new MyRestaurantAdapter(lastKnownLocation, nearbyPlaces, detailsPlaces, getActivity(), this);
+        RecyclerView.Adapter mAdapter = new MyRestaurantAdapter(lastKnownLocation, nearbyPlaces, detailsPlaces, getActivity(), this);
         recyclerView.setAdapter(mAdapter);
 
         return rootView;
@@ -54,10 +55,11 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
 
     @Override
     public void onRestaurantClick(int position) {
-        Bundle bundle = new Bundle();
-        bundle.putString("PlaceID", nearbyPlaces.getResults().get(position).getPlaceId());
-        DetailsRestaurantFragment detailsRestaurantFragment = new DetailsRestaurantFragment();
-        detailsRestaurantFragment.setArguments(bundle);
-        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, detailsRestaurantFragment).commit();
+        Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
+        DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(detailsPlaces, nearbyPlaces.getResults().get(position).getPlaceId());
+        intent.putExtra("DetailPlace", detailPlace);
+        Result result = ((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position);
+        intent.putExtra("Result", result);
+        startActivity(intent);
     }
 }

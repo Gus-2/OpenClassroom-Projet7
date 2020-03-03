@@ -19,64 +19,88 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.UserDataConverter;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.database.FirebaseHelper;
+import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
+import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
+
+import java.util.Objects;
 
 import static android.Manifest.permission.CALL_PHONE;
 
 public class DetailsRestaurantFragment extends Fragment {
 
-    private TextView tvRestaurantTitle;
-    private TextView tvRestaurantAddress;
-    private TextView tvInfoRestaurantCall;
-    private TextView tvInfoRestaurantWeb;
-    private ImageView ivRestaurant;
-    private ImageView ivDetailStar1;
-    private ImageView ivDetailStar2;
-    private ImageView ivDetailStar3;
-    private String placeID;
-    private NearbyPlaces nearbyPlaces;
+    private Result result;
     private DetailsPlaces detailPlace;
-    private int position;
+    private DataUserConnected dataUserConnected;
+    private TextView tvRestaurantLike;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        try {
-            placeID = getArguments().getString("PlaceID");
-            nearbyPlaces = ((Go4Lunch) getActivity()).getNearbyLocations();
-        }catch (NullPointerException e){
-            Toast.makeText(getActivity(), "Error retrieving data", Toast.LENGTH_SHORT).show();
-        }
-        detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(), placeID);
-        position = RestaurantDetailFormat.getPositionFromPlaceID(nearbyPlaces, placeID);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.details_description_restaurant, container, false);
-        tvRestaurantTitle = view.findViewById(R.id.tv_info_restaurant_title);
-        tvRestaurantAddress = view.findViewById(R.id.tv_info_restaurant_address);
-        tvInfoRestaurantCall = view.findViewById(R.id.tv_info_restaurant_phone);
-        tvInfoRestaurantWeb = view.findViewById(R.id.tv_info_restaurant_website);
+        TextView tvRestaurantTitle = view.findViewById(R.id.tv_info_restaurant_title);
+        TextView tvRestaurantAddress = view.findViewById(R.id.tv_info_restaurant_address);
+        TextView tvInfoRestaurantCall = view.findViewById(R.id.tv_info_restaurant_phone);
+        TextView tvInfoRestaurantWeb = view.findViewById(R.id.tv_info_restaurant_website);
+        tvRestaurantLike = view.findViewById(R.id.tv_info_restaurant_like);
 
-        ivRestaurant = view.findViewById(R.id.iv_restaurant_picture_detail);
-        ivDetailStar1 = view.findViewById(R.id.iv_detail_star_1);
-        ivDetailStar2 = view.findViewById(R.id.iv_detail_star_2);
-        ivDetailStar3 = view.findViewById(R.id.iv_detail_star_3);
+        ImageView ivRestaurant = view.findViewById(R.id.iv_restaurant_picture_detail);
+        ImageView ivDetailStar1 = view.findViewById(R.id.iv_detail_star_1);
+        ImageView ivDetailStar2 = view.findViewById(R.id.iv_detail_star_2);
+        ImageView ivDetailStar3 = view.findViewById(R.id.iv_detail_star_3);
 
-        tvRestaurantTitle.setText(nearbyPlaces.getResults().get(position).getName());
+        Bundle bundle = getArguments();
+
+        FirebaseHelper.getUserData(FirebaseAuth.getInstance().getUid()).addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        dataUserConnected = document.toObject(DataUserConnected.class);
+
+                        if(dataUserConnected.getLikedRestaurants().contains(detailPlace.getResult().getPlaceId())){
+                            tvRestaurantLike.setCompoundDrawables(null, getResources().getDrawable(R.drawable.ic_star_blue_24dp), null, null);
+                        }
+                        setOnClickListenerOnLikeButton();
+                    }
+                }
+            }
+        });
+
+
+
+        try {
+            detailPlace = bundle.getParcelable("DetailPlace");
+            result = bundle.getParcelable("Result");
+        }catch (NullPointerException e){
+            Toast.makeText(getActivity(), "Error retrieving data", Toast.LENGTH_SHORT).show();
+        }
+
+        tvRestaurantTitle.setText(result.getName());
         tvRestaurantAddress.setText(RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress()));
-
-        ((Go4Lunch) getActivity()).getSupportActionBar().hide();
 
         try{
             String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&maxHeight=400&" +
-                    "photoreference=" + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() +
+                    "photoreference=" + result.getPhotos().get(0).getPhotoReference() +
                     "&key=AIzaSyAuYS7_WKfOe_Fztg-KdOoai7idmVrCWn8";
 
             Glide.with(getActivity())
@@ -86,7 +110,7 @@ public class DetailsRestaurantFragment extends Fragment {
             Toast.makeText(getActivity(), "Image unavailable !", Toast.LENGTH_SHORT).show();
         }
 
-        int rating = (int) Math.round(nearbyPlaces.getResults().get(position).getRating());
+        int rating = (int) Math.round(result.getRating());
         if(rating >= 1 && rating <= 2){
             ivDetailStar1.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
         }else if(rating >= 3 && rating <= 4){
@@ -98,26 +122,33 @@ public class DetailsRestaurantFragment extends Fragment {
             ivDetailStar3.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
         }
 
-        tvInfoRestaurantCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requestPhonePermission();
-            }
-        });
+        tvInfoRestaurantCall.setOnClickListener(v -> requestPhonePermission());
 
-        tvInfoRestaurantWeb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startWebsite();
-            }
-        });
+        tvInfoRestaurantWeb.setOnClickListener(v -> startWebsite());
+
+
+
         return view;
+    }
+
+    public void setOnClickListenerOnLikeButton(){
+        tvRestaurantLike.setOnClickListener(v -> {
+            if(dataUserConnected.getLikedRestaurants().contains(detailPlace.getResult().getPlaceId())){
+                dataUserConnected.getLikedRestaurants().remove(detailPlace.getResult().getPlaceId());
+                tvRestaurantLike.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_star_orange_24dp), null, null);
+                Toast.makeText(getActivity(), "Restaurant remove from your liked list !", Toast.LENGTH_SHORT).show();
+            }else{
+                dataUserConnected.getLikedRestaurants().add(detailPlace.getResult().getPlaceId());
+                tvRestaurantLike.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_star_blue_24dp), null, null);
+                Toast.makeText(getActivity(), "Restaurant add to your liked list !", Toast.LENGTH_SHORT).show();
+            }
+            FirebaseHelper.getUserDocument(FirebaseAuth.getInstance().getUid()).update("likedRestaurants", dataUserConnected.getLikedRestaurants());
+        });
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        ((Go4Lunch) getActivity()).getSupportActionBar().show();
     }
 
     private void startPhoneCall(String phoneNumber){
@@ -136,7 +167,7 @@ public class DetailsRestaurantFragment extends Fragment {
     }
 
     private void requestPhonePermission(){
-        if (ContextCompat.checkSelfPermission(getActivity(), CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getActivity()), CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
             startPhoneCall(detailPlace.getResult().getInternationalPhoneNumber());
         } else {
             requestPermissions(new String[]{CALL_PHONE}, 1);

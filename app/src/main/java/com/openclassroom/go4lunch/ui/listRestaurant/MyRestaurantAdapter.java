@@ -150,7 +150,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
                     .load(url)
                     .into(holder.ivRestaurant);
         }catch(NullPointerException e){
-
+            e.printStackTrace();
         }
 
 
@@ -170,7 +170,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
 
     public DetailsPlaces getGoodDetailPlace(String id){
         for(DetailsPlaces detailPlace : detailsPlaces){
-            if(detailPlace.getResult().getPlace_id().equals(id)) return detailPlace;
+            if(detailPlace.getResult().getPlaceId().equals(id)) return detailPlace;
         }
         return null;
     }

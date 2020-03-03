@@ -13,7 +13,7 @@ import retrofit2.http.Query;
  **/
 public interface JsonPlaceHolderApi {
 
-    @GET("json?radius=1500&type=restaurant")
+    @GET("json?radius=300&type=restaurant")
     Observable<NearbyPlaces> getExample(
             @Query("location") String location,
             @Query("key") String key

@@ -18,7 +18,7 @@ public class RestaurantDetailFormat {
 
      public static DetailsPlaces getDetailPlacesFromPlaceID(List<DetailsPlaces> detailsPlaces, String placeID){
          for(DetailsPlaces detailPlace : detailsPlaces){
-             if(detailPlace.getResult().getPlace_id().equals(placeID)) return detailPlace;
+             if(detailPlace.getResult().getPlaceId().equals(placeID)) return detailPlace;
          }
          return null;
      }

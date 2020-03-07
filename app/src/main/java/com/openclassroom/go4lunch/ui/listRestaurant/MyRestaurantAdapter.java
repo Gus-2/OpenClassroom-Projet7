@@ -14,14 +14,18 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Period;
+import com.openclassroom.go4lunch.utils.Checks;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,6 +42,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     private OnRestaurantListener onRestaurantListener;
     private String parsedAddress;
     private String restaurantTitle;
+    private List<DataUserConnected> dataUserConnecteds;
 
     public class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
@@ -65,6 +70,9 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         @BindView(R.id.iv_star_3)
         ImageView ivStar3;
 
+        @BindView(R.id.tv_number_colleague)
+        TextView tvNumberColleagueJoining;
+
         OnRestaurantListener onRestaurantListener;
 
         public RestaurantViewHolder(View itemView, OnRestaurantListener onRestaurantListener) {
@@ -81,11 +89,12 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     }
 
     public MyRestaurantAdapter(Location location, NearbyPlaces nearbyPlaces,
-                               ArrayList<DetailsPlaces> detailsPlaces, Context context,
+                               ArrayList<DetailsPlaces> detailsPlaces, List<DataUserConnected> dataUserConnecteds, Context context,
     OnRestaurantListener onRestaurantListener) {
         this.nearbyPlaces = nearbyPlaces;
         this.detailsPlaces = detailsPlaces;
         this.context = context;
+        this.dataUserConnecteds = dataUserConnecteds;
         this.lastKnownLocation = location;
         this.onRestaurantListener = onRestaurantListener;
     }
@@ -101,7 +110,6 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         return  restaurantViewHolder;
 
     }
-
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
@@ -164,6 +172,18 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
             holder.ivStar1.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
             holder.ivStar2.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
             holder.ivStar3.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_yellow_24dp));
+        }
+        int i = 0;
+        for(DataUserConnected dataUserConnected : dataUserConnecteds){
+            if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(nearbyPlaces.getResults().get(position).getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                i++;
+            }
+        }
+        if(i == 0){
+            holder.tvNumberColleagueJoining.setVisibility(View.GONE);
+        }else{
+            holder.tvNumberColleagueJoining.setText("(" + i + ")");
+            holder.tvNumberColleagueJoining.setVisibility(View.VISIBLE);
         }
 
     }

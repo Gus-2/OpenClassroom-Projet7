@@ -10,7 +10,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -27,23 +29,38 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
+import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
+import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.service.MyFirebaseMessagingService;
+import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
 import com.openclassroom.go4lunch.ui.drawerMenu.YourLunchFragment;
 import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
 import com.openclassroom.go4lunch.ui.map.MapFragment;
 import com.openclassroom.go4lunch.ui.workmates.WorkmatesFragment;
+import com.openclassroom.go4lunch.utils.Checks;
+import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
+import com.readystatesoftware.chuck.internal.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,10 +94,18 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(!getSharedPreferences("NotificationEnable", MODE_PRIVATE).contains("Eating")){
+            FirebaseMessaging.getInstance().subscribeToTopic("all");
+            SharedPreferences.Editor editor = getSharedPreferences("NotificationEnable", MODE_PRIVATE).edit();
+            editor.putBoolean("Eating", false);
+            editor.apply();
+        }
+
         user = FirebaseAuth.getInstance().getCurrentUser();
         if(user == null){
             startSignInActivity();
         }else{
+            MyFirebaseMessagingService.getToken(getApplicationContext());
             startActivity();
         }
         drawerLayout = findViewById(R.id.activity_main_drawer_layout);
@@ -198,7 +223,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public void createUserIntoDataBase(){
-        FirebaseHelper.createUser(user.getUid(), user.getDisplayName()).addOnCompleteListener(task -> Toast.makeText(getApplicationContext(), "User is added !", Toast.LENGTH_SHORT).show());
+        FirebaseHelper.createUser(user.getUid(), user.getDisplayName(), user.getPhotoUrl().toString()).addOnCompleteListener(task -> Toast.makeText(getApplicationContext(), "User is added !", Toast.LENGTH_SHORT).show());
     }
 
     private void showSnackBar(DrawerLayout drawerLayout, String message){
@@ -241,7 +266,25 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
         switch (id){
             case R.id.activity_main_drawer_lunch :
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new YourLunchFragment()).commit();
+                DocumentReference documentReference = FirebaseHelper.getUserDocument(user.getUid());
+                Activity activity = this;
+                documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        DataUserConnected dataUserConnected = task.getResult().toObject(DataUserConnected.class);
+                        if(dataUserConnected.getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                            Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
+                            DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
+                            intent.putExtra("DetailPlace", detailPlace);
+                            Result result = ((Go4Lunch) activity).getNearbyLocations().getResults().get(RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) activity).getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay()));
+                            intent.putExtra("Result", result);
+                            startActivity(intent);
+                        }else{
+                            Toast.makeText(activity, "You didn't choose a restaurant for the day !", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
                 break;
             case R.id.activity_main_drawer_settings :
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SettingFragment()).commit();

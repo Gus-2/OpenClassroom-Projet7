@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,17 +26,28 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.database.FirebaseHelper;
+import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
+import com.openclassroom.go4lunch.utils.Checks;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -45,10 +58,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     private final int DEFAULT_ZOOM = 18;
-
+    private ListenerRegistration listenerRegistration;
     private MapView mapView;
     private GoogleMap map;
-
+    private List<DataUserConnected> dataUserConnecteds;
     private NearbyPlaces nearbyLocation;
     private Location mLastKnownLocation;
     private HashMap<String, String> markers;
@@ -113,6 +126,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     public void onResume() {
         super.onResume();
         mapView.onResume();
+        if(map != null){
+            map.clear();
+            getUserChoices(map);
+        }
+
+
     }
 
     @Override
@@ -125,6 +144,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     public void onStop() {
         super.onStop();
         mapView.onStop();
+        listenerRegistration.remove();
     }
 
     @Override
@@ -135,44 +155,70 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
         displayTheLocateButton();
 
-        displayTheRestaurantsNearby(googleMap);
+        getUserChoices(googleMap);
 
         moveToWhereUserIsLocated();
 
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                int position = RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) getActivity()).getNearbyLocations(), markers.get(marker.getId()));
-                Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
-                DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(),((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position).getPlaceId());
-                intent.putExtra("DetailPlace", detailPlace);
-                Result result = ((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position);
-                intent.putExtra("Result", result);
-                startActivity(intent);
-                return  true;
-            }
+        map.setOnMarkerClickListener(marker -> {
+            int position = RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) getActivity()).getNearbyLocations(), markers.get(marker.getId()));
+            Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
+            DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(),((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position).getPlaceId());
+            intent.putExtra("DetailPlace", detailPlace);
+            Result result = ((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position);
+            intent.putExtra("Result", result);
+            startActivity(intent);
+            return  true;
         });
     }
 
+    public void getUserChoices(GoogleMap map){
+        CollectionReference collectionReference = FirebaseHelper.getUserCollection();
+
+        dataUserConnecteds = new ArrayList<>();
+        listenerRegistration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
+            if(e != null) Log.e("Error :", "Retrieving wormates list !");
+            dataUserConnecteds.clear();
+            for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                dataUserConnecteds.add(documentSnapshot.toObject(DataUserConnected.class));
+            }
+            displayTheRestaurantsNearby(map);
+        });
+
+    }
+
     private void displayTheRestaurantsNearby(GoogleMap map){
-        Bitmap markerIcon = BitmapFactory.decodeResource(getResources(), R.drawable.red_marker);
-        BitmapDescriptor markerIconDescriptor = BitmapDescriptorFactory.fromBitmap(markerIcon);
+
+        Bitmap markerIconRed = BitmapFactory.decodeResource(getResources(), R.drawable.red_marker);
+        BitmapDescriptor markerIconDescriptorRed = BitmapDescriptorFactory.fromBitmap(markerIconRed);
+
+        Bitmap markerIconBlue = BitmapFactory.decodeResource(getResources(), R.drawable.blue_marker);
+        BitmapDescriptor markerIconDescriptorBlue = BitmapDescriptorFactory.fromBitmap(markerIconBlue);
+
         for(int i = 0; i < nearbyLocation.getResults().size(); i++){
-            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
-                    nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptor);
-            Marker marker = map.addMarker(markerOptions);
-            markers.put(marker.getId(), nearbyLocation.getResults().get(i).getPlaceId());
+            boolean found = false;
+            for(DataUserConnected dataUserConnected : dataUserConnecteds){
+                if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(nearbyLocation.getResults().get(i).getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                    MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
+                            nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptorBlue);
+                    Marker marker = map.addMarker(markerOptions);
+                    markers.put(marker.getId(), nearbyLocation.getResults().get(i).getPlaceId());
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
+                        nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptorRed);
+                Marker marker = map.addMarker(markerOptions);
+                markers.put(marker.getId(), nearbyLocation.getResults().get(i).getPlaceId());
+            }
+
         }
     }
 
     private void displayTheLocateButton(){
         FloatingActionButton locateUseerButton = getView().findViewById(R.id.float_button_locate_user);
-        locateUseerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moveToWhereUserIsLocated();
-            }
-        });
+        locateUseerButton.setOnClickListener(v -> moveToWhereUserIsLocated());
     }
 
     private void moveToWhereUserIsLocated(){

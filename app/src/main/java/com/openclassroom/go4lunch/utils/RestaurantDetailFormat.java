@@ -1,5 +1,7 @@
 package com.openclassroom.go4lunch.utils;
 
+import android.util.Log;
+
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 
@@ -17,7 +19,9 @@ public class RestaurantDetailFormat {
      }
 
      public static DetailsPlaces getDetailPlacesFromPlaceID(List<DetailsPlaces> detailsPlaces, String placeID){
+         Log.d("Detail Place Choose", "" + placeID);
          for(DetailsPlaces detailPlace : detailsPlaces){
+             Log.d("Places : ", "" + detailPlace.getResult().getPlaceId());
              if(detailPlace.getResult().getPlaceId().equals(placeID)) return detailPlace;
          }
          return null;
@@ -29,7 +33,5 @@ public class RestaurantDetailFormat {
         }
         return -1;
     }
-
-
 
 }

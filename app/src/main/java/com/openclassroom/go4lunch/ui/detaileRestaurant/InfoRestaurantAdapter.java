@@ -8,7 +8,11 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
+import com.openclassroom.go4lunch.models.DataUserConnected;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -17,6 +21,8 @@ import butterknife.ButterKnife;
  * Created by de Meeûs Augustin on 2020-02-17
  **/
 public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAdapter.InfoRestaurantHolder> {
+
+    private List<DataUserConnected> dataUserConnecteds;
 
     public class InfoRestaurantHolder extends RecyclerView.ViewHolder {
 
@@ -32,8 +38,8 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
         }
     }
 
-    public InfoRestaurantAdapter() {
-
+    public InfoRestaurantAdapter(List<DataUserConnected> dataUserConnecteds) {
+        this.dataUserConnecteds = dataUserConnecteds;
     }
 
     // Create new views (invoked by the layout manager)
@@ -52,12 +58,17 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(InfoRestaurantAdapter.InfoRestaurantHolder holder, int position) {
-        //holder.tvRestaurantTitle.setText(example.getResults().get(position).getPlaceId());
+        Glide.with(holder.itemView.getContext())
+                .load(dataUserConnecteds.get(position).getPhotoUrl())
+                .into(holder.ivColleaguePicture);
+
+        String[] names = dataUserConnecteds.get(position).getUserFirstNameAndLastname().split(" ");
+        holder.tvJoiningColleague.setText(names[0] + " is joining !");
     }
 
 
     @Override
     public int getItemCount() {
-        return 0;
+        return dataUserConnecteds.size();
     }
 }

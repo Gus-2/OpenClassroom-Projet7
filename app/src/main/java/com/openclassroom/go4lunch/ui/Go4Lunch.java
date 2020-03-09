@@ -3,34 +3,29 @@ package com.openclassroom.go4lunch.ui;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -38,10 +33,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
@@ -52,19 +43,18 @@ import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.service.MyFirebaseMessagingService;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
-import com.openclassroom.go4lunch.ui.drawerMenu.YourLunchFragment;
 import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
 import com.openclassroom.go4lunch.ui.map.MapFragment;
 import com.openclassroom.go4lunch.ui.workmates.WorkmatesFragment;
 import com.openclassroom.go4lunch.utils.Checks;
+import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
-import com.readystatesoftware.chuck.internal.ui.MainActivity;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.Disposable;
@@ -73,6 +63,7 @@ import io.reactivex.observers.DisposableObserver;
 public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
 
     private static final int RC_SIGN_IN = 123;
+
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -94,10 +85,10 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if(!getSharedPreferences("NotificationEnable", MODE_PRIVATE).contains("Eating")){
-            FirebaseMessaging.getInstance().subscribeToTopic("all");
-            SharedPreferences.Editor editor = getSharedPreferences("NotificationEnable", MODE_PRIVATE).edit();
-            editor.putBoolean("Eating", false);
+        if(!getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, MODE_PRIVATE).contains(ConstantString.EATING)){
+            FirebaseMessaging.getInstance().subscribeToTopic(ConstantString.TOPIG_TO_SUBSCRIBE);
+            SharedPreferences.Editor editor = getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, MODE_PRIVATE).edit();
+            editor.putBoolean(ConstantString.EATING, false);
             editor.apply();
         }
 
@@ -116,8 +107,8 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     private void startDefaultFragment(){
         Bundle bundle = new Bundle();
 
-        bundle.putParcelable("Location", mLastKnownLocation);
-        bundle.putParcelable("NearbyLocation", nearbyLocations);
+        bundle.putParcelable(ConstantString.LOCATION, mLastKnownLocation);
+        bundle.putParcelable(ConstantString.NEARBY_LOCATION, nearbyLocations);
 
         MapFragment mapFragment = new MapFragment();
         mapFragment.setArguments(bundle);
@@ -163,7 +154,11 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startActivity();
             } else {
-                Log.d("Permission", "Unauthorised !");
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getResources().getString(R.string.allow_location_services));
+                builder.setPositiveButton(ConstantString.OK, (dialog, id) -> finish());
+                builder.create();
+                builder.show();
             }
         }
     }
@@ -223,7 +218,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     }
 
     public void createUserIntoDataBase(){
-        FirebaseHelper.createUser(user.getUid(), user.getDisplayName(), user.getPhotoUrl().toString()).addOnCompleteListener(task -> Toast.makeText(getApplicationContext(), "User is added !", Toast.LENGTH_SHORT).show());
+        FirebaseHelper.createUser(user.getUid(), user.getDisplayName(), Objects.requireNonNull(user.getPhotoUrl()).toString()).addOnCompleteListener(task -> Toast.makeText(getApplicationContext(), getResources().getString(R.string.account_created), Toast.LENGTH_SHORT).show());
     }
 
     private void showSnackBar(DrawerLayout drawerLayout, String message){
@@ -267,22 +262,22 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         switch (id){
             case R.id.activity_main_drawer_lunch :
                 DocumentReference documentReference = FirebaseHelper.getUserDocument(user.getUid());
-                Activity activity = this;
-                documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        DataUserConnected dataUserConnected = task.getResult().toObject(DataUserConnected.class);
-                        if(dataUserConnected.getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
-                            Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
-                            DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
-                            intent.putExtra("DetailPlace", detailPlace);
-                            Result result = ((Go4Lunch) activity).getNearbyLocations().getResults().get(RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) activity).getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay()));
-                            intent.putExtra("Result", result);
-                            startActivity(intent);
-                        }else{
-                            Toast.makeText(activity, "You didn't choose a restaurant for the day !", Toast.LENGTH_SHORT).show();
-                        }
+                Go4Lunch activity = this;
+                documentReference.get().addOnCompleteListener(task -> {
+
+                    DataUserConnected dataUserConnected = Objects.requireNonNull(task.getResult()).toObject(DataUserConnected.class);
+                    if(dataUserConnected.getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                        Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
+                        DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
+                        intent.putExtra(ConstantString.DETAIL_PLACE, detailPlace);
+                        Result result = activity.getNearbyLocations().getResults().get(RestaurantDetailFormat.getPositionFromPlaceID(activity.getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay()));
+                        intent.putExtra(ConstantString.RESULT, result);
+                        startActivity(intent);
+                    }else{
+                        Toast.makeText(activity, getResources().getString(R.string.message_restaurant_not_choosen), Toast.LENGTH_SHORT).show();
                     }
+
+
                 });
 
                 break;
@@ -332,9 +327,9 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
             } else if (menuItem.getItemId() == R.id.action_restaurant){
                 RestaurantFragment restaurantFragment = new RestaurantFragment();
                 Bundle bundle = new Bundle();
-                bundle.putParcelable("NearbyPlaces", nearbyLocations);
-                bundle.putParcelableArrayList("DetailsPlaces", (ArrayList<? extends Parcelable>) detailsPlaces);
-                bundle.putParcelable("Location", mLastKnownLocation);
+                bundle.putParcelable(ConstantString.NEARBY_PLACES, nearbyLocations);
+                bundle.putParcelableArrayList(ConstantString.DETAILS_PLACES, (ArrayList<? extends Parcelable>) detailsPlaces);
+                bundle.putParcelable(ConstantString.LOCATION, mLastKnownLocation);
                 restaurantFragment.setArguments(bundle);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
                 return true;
@@ -371,14 +366,13 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     }
 
 
-    private void getDeviceLocation() {
+    public void getDeviceLocation() {
         try {
             mFusedLocationProviderClient.getLastLocation()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Go4Lunch.this.mLastKnownLocation = task.getResult();
                         if(task.getResult() != null){
-
                             executeHttpRequestWithRetrofit(task.getResult().getLatitude() + "," + task.getResult().getLongitude());
                         }
                     } else {

@@ -1,10 +1,7 @@
 package com.openclassroom.go4lunch.utils;
 
-import android.util.Log;
-
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
-
 import java.util.List;
 
 /**
@@ -12,16 +9,14 @@ import java.util.List;
  **/
 public class RestaurantDetailFormat {
 
-     public static String parseAddress(String type, String addressWithCountry){
+     public static String parseAddress(String addressWithCountry){
          String address = addressWithCountry.substring(0, addressWithCountry.indexOf(","));
-         String numberRestaurant = address.substring(address.lastIndexOf(" ")+1, address.length());
+         String numberRestaurant = address.substring(address.lastIndexOf(" ")+1);
          return numberRestaurant + " " + (address.substring(0, address.lastIndexOf(" ")).toLowerCase());
      }
 
      public static DetailsPlaces getDetailPlacesFromPlaceID(List<DetailsPlaces> detailsPlaces, String placeID){
-         Log.d("Detail Place Choose", "" + placeID);
          for(DetailsPlaces detailPlace : detailsPlaces){
-             Log.d("Places : ", "" + detailPlace.getResult().getPlaceId());
              if(detailPlace.getResult().getPlaceId().equals(placeID)) return detailPlace;
          }
          return null;

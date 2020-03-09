@@ -1,30 +1,39 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
-    <string name="connection_secceded">Connection réussie !</string>
-    <string name="error_authentification_canceled">Authentification annulée</string>
-    <string name="error_no_internet">Pas de connection internet !</string>
-    <string name="error_unknow_error">Erreur inconnue !</string>
-
-    <!-- Used in NavigationDrawer -->
+    <string name="connection_secceded">Connection successful</string>
+    <string name="error_authentification_canceled">Unable to identify you !</string>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="error_unknow_error">Unknown error !</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <!-- BOTTOM NAVIGATION VIEW -->
-    <string name="bottom_navigation_menu_map">Carte</string>
-    <string name="bottom_navigation_menu_list">Restaurants</string>
-    <string name="bottom_navigation_menu_workmates">Collègues</string>
-    <string name="drawer_your_lunch">VOTRE REPAS</string>
-    <string name="activity_main_drawer_settings">PARAMETRES</string>
-    <string name="activity_main_drawer_logout">SE DECONNECTER</string>
+    <string name="bottom_navigation_menu_map">Map View</string>
+    <string name="bottom_navigation_menu_list">List View</string>
+    <string name="bottom_navigation_menu_workmates">Workmates</string>
+    <string name="drawer_your_lunch">YOUR LUNCH</string>
+    <string name="activity_main_drawer_settings">SETTINGS</string>
+    <string name="activity_main_drawer_logout">LOG OUT</string>
     <string name="drawer_header_go4lunch">Go4Lunch</string>
-
     <string name="facebook_application_id">491534045101730</string>
     <string name="fb_login_protocol_scheme">fb491534045101730</string>
     <string name="title_activity_details_description_restaurant">DetailsDescriptionRestaurant</string>
-    <string name="open_until">Open until %1$s</string>
+    <string name="open_until">Open until %sh%s </string>
     <string name="action_settings">Settings</string>
     <string name="error_retrieving_data">Error retrieving data</string>
     <string name="error_get_location">Error when trying to get the location !</string>
     <string name="allow_location_permission">Please allow location\'s permission !</string>
-
+    <string name="account_created">You\'re now sign in !</string>
+    <string name="allow_location_services">Please allow location\'s services in the app settings !</string>
+    <string name="message_restaurant_not_choosen">You didn\'t choose a restaurant for the day !</string>
+    <string name="closed">Closed</string>
+    <string name="schedule_unavailable">Schedule not available</string>
+    <string name="distance_between_two_points">%d m</string>
+    <string name="joining_colleagues">(%d)</string>
+    <string name="unable_pass_data_activities">Unable to pass data between activities !</string>
+    <string name="image_unavailable">Image unavailable !</string>
+    <string name="choice_succed_removed">Your choice has been successfully removed !</string>
+    <string name="choice_success_registered">Your choice has been successfully registered !</string>
+    <string name="restaurant_removed_list">Restaurant remove from your liked list !</string>
+    <string name="restaurant_added_list">Restaurant add to your liked list !</string>
+    <string name="no_website">No website available !</string>
+    <string name="joining_colleague">%s is joining</string>
 </resources>

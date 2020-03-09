@@ -4,18 +4,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -26,13 +21,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DataUserConnected;
@@ -42,22 +34,19 @@ import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.utils.Checks;
+import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Objects;
 
 /**
  * Created by de Meeûs Augustin on 2020-01-20
  **/
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
-
-    private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
-    private final int DEFAULT_ZOOM = 18;
     private ListenerRegistration listenerRegistration;
     private MapView mapView;
     private GoogleMap map;
@@ -66,21 +55,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private Location mLastKnownLocation;
     private HashMap<String, String> markers;
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SecurityChecks.checkGooglePlayServices(getContext());
-
         Bundle bundle = getArguments();
-        if( bundle == null){
-            nearbyLocation = ((Go4Lunch) getActivity()).getNearbyLocations();
+        if(bundle == null){
+            nearbyLocation = ((Go4Lunch) Objects.requireNonNull(getActivity())).getNearbyLocations();
             mLastKnownLocation = ((Go4Lunch) getActivity()).getLocation();
         }else{
-            nearbyLocation = getArguments().getParcelable("NearbyLocation");
-            mLastKnownLocation = bundle.getParcelable("Location");
+            nearbyLocation = getArguments().getParcelable(ConstantString.NEARBY_LOCATION);
+            mLastKnownLocation = bundle.getParcelable(ConstantString.LOCATION);
         }
-
         markers = new HashMap<>();
     }
 
@@ -88,7 +74,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.map_fragment, container, false);
-
         mapView = view.findViewById(R.id.map_view_fragment);
         initGoogleMap(savedInstanceState);
         return view;
@@ -97,11 +82,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private void initGoogleMap(Bundle savedInstanceState){
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
-            mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+            mapViewBundle = savedInstanceState.getBundle(ConstantString.MAPVIEW_BUNDLE_KEY);
         }
-
         mapView.onCreate(mapViewBundle);
-
         mapView.getMapAsync(this);
     }
 
@@ -113,7 +96,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             map.setMyLocationEnabled(true);
             setUiMapSettings();
         } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -130,8 +113,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             map.clear();
             getUserChoices(map);
         }
-
-
     }
 
     @Override
@@ -150,40 +131,35 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-
         updateLocationUI();
-
         displayTheLocateButton();
-
         getUserChoices(googleMap);
-
         moveToWhereUserIsLocated();
-
         map.setOnMarkerClickListener(marker -> {
-            int position = RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) getActivity()).getNearbyLocations(), markers.get(marker.getId()));
+            int position = RestaurantDetailFormat.getPositionFromPlaceID(((Go4Lunch) Objects.requireNonNull(getActivity())).getNearbyLocations(), markers.get(marker.getId()));
             Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
             DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(((Go4Lunch) getActivity()).getDetailsPlaces(),((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position).getPlaceId());
-            intent.putExtra("DetailPlace", detailPlace);
+            intent.putExtra(ConstantString.DETAIL_PLACE, detailPlace);
             Result result = ((Go4Lunch) getActivity()).getNearbyLocations().getResults().get(position);
-            intent.putExtra("Result", result);
+            intent.putExtra(ConstantString.RESULT, result);
             startActivity(intent);
             return  true;
         });
     }
 
-    public void getUserChoices(GoogleMap map){
+    private void getUserChoices(GoogleMap map){
         CollectionReference collectionReference = FirebaseHelper.getUserCollection();
-
         dataUserConnecteds = new ArrayList<>();
         listenerRegistration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
-            if(e != null) Log.e("Error :", "Retrieving wormates list !");
+            if(e != null) e.printStackTrace();
             dataUserConnecteds.clear();
-            for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                dataUserConnecteds.add(documentSnapshot.toObject(DataUserConnected.class));
+            if(queryDocumentSnapshots != null){
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                    dataUserConnecteds.add(documentSnapshot.toObject(DataUserConnected.class));
+                }
+                displayTheRestaurantsNearby(map);
             }
-            displayTheRestaurantsNearby(map);
         });
-
     }
 
     private void displayTheRestaurantsNearby(GoogleMap map){
@@ -217,15 +193,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     private void displayTheLocateButton(){
-        FloatingActionButton locateUseerButton = getView().findViewById(R.id.float_button_locate_user);
-        locateUseerButton.setOnClickListener(v -> moveToWhereUserIsLocated());
+        View view = getView();
+        if(view != null){
+            FloatingActionButton locateUseerButton = view.findViewById(R.id.float_button_locate_user);
+            locateUseerButton.setOnClickListener(v -> ((Go4Lunch) Objects.requireNonNull(getActivity())).getDeviceLocation());
+        }
     }
 
     private void moveToWhereUserIsLocated(){
-
-        map.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+        if(getContext() != null){
+            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), ConstantString.DEFAULT_ZOOM));
+        }
     }
 
     @Override
@@ -250,5 +230,4 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         super.onLowMemory();
         mapView.onLowMemory();
     }
-
 }

@@ -1,6 +1,5 @@
 package com.openclassroom.go4lunch.ui.listRestaurant;
 
-
 import android.content.Context;
 import android.location.Location;
 import android.util.Log;
@@ -10,23 +9,23 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Period;
 import com.openclassroom.go4lunch.utils.Checks;
+import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
+import com.openclassroom.go4lunch.utils.Tools;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -40,8 +39,6 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     private Context context;
     private Location lastKnownLocation;
     private OnRestaurantListener onRestaurantListener;
-    private String parsedAddress;
-    private String restaurantTitle;
     private List<DataUserConnected> dataUserConnecteds;
 
     public class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -75,7 +72,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
 
         OnRestaurantListener onRestaurantListener;
 
-        public RestaurantViewHolder(View itemView, OnRestaurantListener onRestaurantListener) {
+        RestaurantViewHolder(View itemView, OnRestaurantListener onRestaurantListener) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             itemView.setOnClickListener(this);
@@ -88,9 +85,9 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         }
     }
 
-    public MyRestaurantAdapter(Location location, NearbyPlaces nearbyPlaces,
-                               ArrayList<DetailsPlaces> detailsPlaces, List<DataUserConnected> dataUserConnecteds, Context context,
-    OnRestaurantListener onRestaurantListener) {
+    MyRestaurantAdapter(Location location, NearbyPlaces nearbyPlaces,
+                        ArrayList<DetailsPlaces> detailsPlaces, List<DataUserConnected> dataUserConnecteds, Context context,
+                        OnRestaurantListener onRestaurantListener) {
         this.nearbyPlaces = nearbyPlaces;
         this.detailsPlaces = detailsPlaces;
         this.context = context;
@@ -99,19 +96,16 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         this.onRestaurantListener = onRestaurantListener;
     }
 
-    // Create new views (invoked by the layout manager)
     @Override
+    @NonNull
     public MyRestaurantAdapter.RestaurantViewHolder onCreateViewHolder(ViewGroup parent,
                                                      int viewType) {
-        // create a new view
         View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.rv_restaurants_item, parent, false);
-        RestaurantViewHolder restaurantViewHolder = new RestaurantViewHolder(v, onRestaurantListener);
-        return  restaurantViewHolder;
+        return new RestaurantViewHolder(v, onRestaurantListener);
 
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(RestaurantViewHolder holder, int position) {
 
@@ -123,37 +117,34 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         holder.tvRestaurantTitle.setText(nearbyPlaces.getResults().get(position).getName());
         try{
             DetailsPlaces detailPlace = getGoodDetailPlace(nearbyPlaces.getResults().get(position).getPlaceId());
-            parsedAddress = RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress());
+            String parsedAddress = RestaurantDetailFormat.parseAddress(detailPlace.getResult().getFormattedAddress());
             holder.tvTypeAddress.setText(parsedAddress);
 
             if(nearbyPlaces.getResults().get(position).getOpeningHours().getOpenNow()){
-                Log.d("a", "" + 1);
                 for(Period period : detailPlace.getResult().getOpeningHours().getPeriods()){
                     if(period.getOpen().getDay() == day){
-                        if((hour >= Integer.parseInt(period.getOpen().getTime())) &&  (hour <= Integer.parseInt(period.getClose().getTime()))){
-                            String time = period.getClose().getTime();
-                            holder.tvOpeningTime.setText("Open until " + (time.substring(0,2) + "h" + time.substring(2,4)));
-                            holder.tvOpeningTime.setTextColor(context.getResources().getColor(R.color.police_color));
-                            break;
-                        }
+
+                        String time = period.getClose().getTime();
+                        holder.tvOpeningTime.setText(String.format(context.getResources().getString(R.string.open_until), time.substring(0,2), time.substring(2,4)));
+                        holder.tvOpeningTime.setTextColor(context.getResources().getColor(R.color.police_color));
+                        break;
+
                     }
                 }
             }else{
-                holder.tvOpeningTime.setText("Closed");
+                holder.tvOpeningTime.setText(R.string.closed);
                 holder.tvOpeningTime.setTextColor(context.getResources().getColor(R.color.red));
             }
         }catch (NullPointerException e){
-            holder.tvOpeningTime.setText("Schedule not available");
+            holder.tvOpeningTime.setText(R.string.schedule_unavailable);
             holder.tvOpeningTime.setTextColor(ContextCompat.getColor(context, R.color.police_color));
         }
 
-        holder.tvDistance.setText("" + getDistanceBetweenTwoPoints(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLat(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLng()) + " m");
+        holder.tvDistance.setText(String.format(context.getResources().getString(R.string.distance_between_two_points),
+                Tools.getDistanceBetweenTwoPoints(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLat(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLng())));
 
         try{
-            String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&maxHeight=400&" +
-                    "photoreference=" + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() +
-                    "&key=AIzaSyAuYS7_WKfOe_Fztg-KdOoai7idmVrCWn8";
-
+            String url = ConstantString.URL_FIRST_PART + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() + ConstantString.URL_END_PART + context.getResources().getString(R.string.map_key);
             Glide.with(context)
                     .load(url)
                     .into(holder.ivRestaurant);
@@ -182,27 +173,17 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         if(i == 0){
             holder.tvNumberColleagueJoining.setVisibility(View.GONE);
         }else{
-            holder.tvNumberColleagueJoining.setText("(" + i + ")");
+            holder.tvNumberColleagueJoining.setText(String.format(context.getResources().getString(R.string.joining_colleagues), i));
             holder.tvNumberColleagueJoining.setVisibility(View.VISIBLE);
         }
 
     }
 
-    public DetailsPlaces getGoodDetailPlace(String id){
+    private DetailsPlaces getGoodDetailPlace(String id){
         for(DetailsPlaces detailPlace : detailsPlaces){
             if(detailPlace.getResult().getPlaceId().equals(id)) return detailPlace;
         }
         return null;
-    }
-
-    private int getDistanceBetweenTwoPoints(double lat1,double lon1,double lat2,double lon2) {
-
-        float[] distance = new float[2];
-
-        Location.distanceBetween( lat1, lon1,
-                lat2, lon2, distance);
-
-        return (int) distance[0];
     }
 
     @Override

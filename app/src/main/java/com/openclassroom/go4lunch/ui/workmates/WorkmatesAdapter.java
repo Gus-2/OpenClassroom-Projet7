@@ -4,20 +4,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
-import com.openclassroom.go4lunch.models.Result;
-import com.openclassroom.go4lunch.ui.Go4Lunch;
-
-import java.util.Calendar;
-import java.util.Date;
+import com.openclassroom.go4lunch.utils.Checks;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -64,32 +57,21 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.MyVi
                 .into(holder.circleImageView);
         String[] names = dataUserConnecteds.get(position).getUserFirstNameAndLastname().split(" ");
 
-        Calendar calendarNow = null;
-        Calendar calendarChoosenRestaurant = Calendar.getInstance();
 
-        if(dataUserConnecteds.get(position).getDateOfTheChoosenRestaurant() != null){
-            calendarChoosenRestaurant.setTime(dataUserConnecteds.get(position).getDateOfTheChoosenRestaurant());
-            calendarNow = Calendar.getInstance();
-        }
-        if(calendarNow != null && calendarNow.get(Calendar.YEAR) == calendarNow.get(Calendar.YEAR)
-            && calendarNow.get(Calendar.DAY_OF_YEAR) == calendarNow.get(Calendar.DAY_OF_YEAR)){
-            String restaurantName = null;
-            for(Result result: nearbyPlaces.getResults()){
-                if(result.getPlaceId().equals(dataUserConnecteds.get(position).getChoosenRestaurantForTheDay())){
-                    restaurantName = result.getName();
+        if(dataUserConnecteds.get(position).getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnecteds.get(position).getDateOfTheChoosenRestaurant())){
+            boolean found = false;
+            for(int i = 0; i < nearbyPlaces.getResults().size(); i++){
+                if(nearbyPlaces.getResults().get(i).getName().equals(dataUserConnecteds.get(position).getNameOfTheChoosenRestaurant())){
+                    found = true;
                     break;
                 }
-
             }
-
-            if(restaurantName != null) holder.tvJoiningColleague.setText(names[0] + " is going to eat at " + nearbyPlaces.getResults().get(position).getName());
+            if(found) holder.tvJoiningColleague.setText(names[0] + " is going to eat at " + dataUserConnecteds.get(position).getNameOfTheChoosenRestaurant());
             else  holder.tvJoiningColleague.setText(names[0] + " is going to eat outside of your area " );
 
         }else{
             holder.tvJoiningColleague.setText(names[0] + " hasn't decided yet ");
         }
-
-
     }
 
     @Override

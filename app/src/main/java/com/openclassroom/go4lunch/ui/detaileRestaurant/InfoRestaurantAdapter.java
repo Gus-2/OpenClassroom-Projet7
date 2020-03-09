@@ -1,19 +1,16 @@
 package com.openclassroom.go4lunch.ui.detaileRestaurant;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DataUserConnected;
-
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -23,6 +20,7 @@ import butterknife.ButterKnife;
 public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAdapter.InfoRestaurantHolder> {
 
     private List<DataUserConnected> dataUserConnecteds;
+    private Context context;
 
     public class InfoRestaurantHolder extends RecyclerView.ViewHolder {
 
@@ -38,24 +36,20 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
         }
     }
 
-    public InfoRestaurantAdapter(List<DataUserConnected> dataUserConnecteds) {
+    public InfoRestaurantAdapter(Context context, List<DataUserConnected> dataUserConnecteds) {
+        this.context = context;
         this.dataUserConnecteds = dataUserConnecteds;
     }
-
-    // Create new views (invoked by the layout manager)
     @Override
     public InfoRestaurantAdapter.InfoRestaurantHolder onCreateViewHolder(ViewGroup parent,
                                                                        int viewType) {
-        // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_joining_colleagues, parent, false);
 
-        InfoRestaurantAdapter.InfoRestaurantHolder infoViewHolder = new InfoRestaurantAdapter.InfoRestaurantHolder(v);
-        return  infoViewHolder;
+        return new InfoRestaurantHolder(v);
 
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(InfoRestaurantAdapter.InfoRestaurantHolder holder, int position) {
         Glide.with(holder.itemView.getContext())
@@ -63,7 +57,7 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
                 .into(holder.ivColleaguePicture);
 
         String[] names = dataUserConnecteds.get(position).getUserFirstNameAndLastname().split(" ");
-        holder.tvJoiningColleague.setText(names[0] + " is joining !");
+        holder.tvJoiningColleague.setText(String.format(context.getResources().getString(R.string.joining_colleague), names[0]));
     }
 
 

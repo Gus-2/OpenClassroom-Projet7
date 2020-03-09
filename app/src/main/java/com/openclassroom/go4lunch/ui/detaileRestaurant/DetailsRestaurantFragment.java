@@ -1,10 +1,10 @@
 package com.openclassroom.go4lunch.ui.detaileRestaurant;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,24 +25,17 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Result;
-import com.openclassroom.go4lunch.ui.Go4Lunch;
-import com.openclassroom.go4lunch.ui.workmates.WorkmatesAdapter;
 import com.openclassroom.go4lunch.utils.Checks;
+import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
-
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
-import butterknife.BindView;
 
 import static android.Manifest.permission.CALL_PHONE;
 
@@ -57,11 +45,9 @@ public class DetailsRestaurantFragment extends Fragment {
     private DetailsPlaces detailPlace;
     private DataUserConnected dataUserConnected;
     private TextView tvRestaurantLike;
-    private FloatingActionButton floatingActionButtonChoosenRestaurant;
     private ListenerRegistration listenerRegistration;
     private List<DataUserConnected> dataUserConnecteds;
     private String address;
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +64,7 @@ public class DetailsRestaurantFragment extends Fragment {
         TextView tvInfoRestaurantCall = view.findViewById(R.id.tv_info_restaurant_phone);
         TextView tvInfoRestaurantWeb = view.findViewById(R.id.tv_info_restaurant_website);
         tvRestaurantLike = view.findViewById(R.id.tv_info_restaurant_like);
-        floatingActionButtonChoosenRestaurant = view.findViewById(R.id.fab_choosen_restaurant_for_the_day);
+        FloatingActionButton floatingActionButtonChoosenRestaurant = view.findViewById(R.id.fab_choosen_restaurant_for_the_day);
         ImageView ivRestaurant = view.findViewById(R.id.iv_restaurant_picture_detail);
         ImageView ivDetailStar1 = view.findViewById(R.id.iv_detail_star_1);
         ImageView ivDetailStar2 = view.findViewById(R.id.iv_detail_star_2);
@@ -88,21 +74,21 @@ public class DetailsRestaurantFragment extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.rv_info_restaurant_joining_colleagues);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
-        InfoRestaurantAdapter mAdapter = new InfoRestaurantAdapter(dataUserConnecteds);
+        InfoRestaurantAdapter mAdapter = new InfoRestaurantAdapter(getActivity(), dataUserConnecteds);
         recyclerView.setAdapter(mAdapter);
 
         Bundle bundle = getArguments();
 
         FirebaseHelper.getUserData(FirebaseAuth.getInstance().getUid()).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    dataUserConnected = document.toObject(DataUserConnected.class);
-
-                    if(dataUserConnected.getLikedRestaurants().contains(detailPlace.getResult().getPlaceId())){
-                        tvRestaurantLike.setCompoundDrawables(null, getResources().getDrawable(R.drawable.ic_star_blue_24dp), null, null);
-                        break;
+                if(task.getResult() != null){
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        dataUserConnected = document.toObject(DataUserConnected.class);
+                        if(dataUserConnected.getLikedRestaurants().contains(detailPlace.getResult().getPlaceId())){
+                            tvRestaurantLike.setCompoundDrawables(null, getResources().getDrawable(R.drawable.ic_star_blue_24dp), null, null);
+                            break;
+                        }
                     }
-
                 }
                 setOnClickListenerOnLikeButton();
             }
@@ -110,42 +96,42 @@ public class DetailsRestaurantFragment extends Fragment {
 
         CollectionReference collectionReference = FirebaseHelper.getUserCollection();
 
-
         listenerRegistration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
-            if(e != null) Log.e("Error :", "Retrieving workmates eating list !");
+            if(e != null) e.printStackTrace();
             dataUserConnecteds.clear();
-            for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                DataUserConnected dataUserConnected = documentSnapshot.toObject(DataUserConnected.class);
-                if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(detailPlace.getResult().getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
-                    dataUserConnecteds.add(dataUserConnected);
+            if(queryDocumentSnapshots != null){
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                    DataUserConnected dataUserConnected = documentSnapshot.toObject(DataUserConnected.class);
+                    if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(detailPlace.getResult().getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                        dataUserConnecteds.add(dataUserConnected);
+                        mAdapter.notifyDataSetChanged();
+                    }
                     mAdapter.notifyDataSetChanged();
                 }
-                mAdapter.notifyDataSetChanged();
             }
         });
 
-        try {
-            detailPlace = bundle.getParcelable("DetailPlace");
-            result = bundle.getParcelable("Result");
-        }catch (NullPointerException e){
-            Toast.makeText(getActivity(), "Error retrieving data", Toast.LENGTH_SHORT).show();
+        if(bundle != null){
+            detailPlace = bundle.getParcelable(ConstantString.DETAIL_PLACE);
+            result = bundle.getParcelable(ConstantString.RESULT);
         }
 
-        tvRestaurantTitle.setText(result.getName());
+        tvRestaurantTitle.setText(Objects.requireNonNull(result).getName());
 
-        address = RestaurantDetailFormat.parseAddress("", detailPlace.getResult().getFormattedAddress());
+        address = RestaurantDetailFormat.parseAddress(detailPlace.getResult().getFormattedAddress());
         tvRestaurantAddress.setText(address);
 
         try{
-            String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&maxHeight=400&" +
-                    "photoreference=" + result.getPhotos().get(0).getPhotoReference() +
-                    "&key=AIzaSyAuYS7_WKfOe_Fztg-KdOoai7idmVrCWn8";
-
-            Glide.with(getActivity())
-                    .load(url)
-                    .into(ivRestaurant);
+            String url = ConstantString.URL_FIRST_PICTURE + result.getPhotos().get(0).getPhotoReference() +
+                    ConstantString.URL_END_PART + getResources().getString(R.string.map_key);
+            Activity activity = getActivity();
+            if(activity != null){
+                Glide.with(getActivity())
+                        .load(url)
+                        .into(ivRestaurant);
+            }
         }catch(NullPointerException e){
-            Toast.makeText(getActivity(), "Image unavailable !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.image_unavailable, Toast.LENGTH_SHORT).show();
         }
 
         int rating = (int) Math.round(result.getRating());
@@ -164,32 +150,39 @@ public class DetailsRestaurantFragment extends Fragment {
 
         tvInfoRestaurantWeb.setOnClickListener(v -> startWebsite());
 
-        floatingActionButtonChoosenRestaurant.setOnClickListener(v -> addChoosenRestaurantForTheDay());
+        floatingActionButtonChoosenRestaurant.setOnClickListener(v -> FirebaseHelper.getUserData(FirebaseAuth.getInstance().getUid()).addOnCompleteListener(task -> {
+            DataUserConnected dataUserConnected = task.getResult().getDocuments().get(0).toObject(DataUserConnected.class);
+            if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(detailPlace.getResult().getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                updateChoosenRestaurantForTheDay(null, null, null, null, getString(R.string.choice_succed_removed));
+            }else{
+                updateChoosenRestaurantForTheDay(result.getPlaceId(), Timestamp.now(), result.getName(), address, getString(R.string.choice_success_registered));
+            }
+        }));
+
         return view;
     }
 
-    public void addChoosenRestaurantForTheDay(){
+    private void updateChoosenRestaurantForTheDay(String placeId, Timestamp timestamp, String name, String address, String message){
+
         FirebaseHelper.getUserDocument(FirebaseAuth.getInstance().getUid())
-                .update("choosenRestaurantForTheDay", result.getPlaceId(), "dateOfTheChoosenRestaurant", Timestamp.now(),
-                        "nameOfTheChoosenRestaurant", result.getName(), "addressOfTheChoosenRestaurant", address)
-                .addOnSuccessListener(aVoid -> Toast.makeText(getActivity(), "Your choice has been successfully registered !", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(getActivity(), "Your choice has been unsuccessfully registered !", Toast.LENGTH_SHORT).show());
+                .update(ConstantString.CHOOSEN_RESTAURANT_FOR_THE_DAY, placeId, ConstantString.DATE_CHOOSEN_RESTAURANT_FOR_THE_DAY, timestamp,
+                        ConstantString.NAME_CHOOSEN_RESTAURANT_FOR_THE_DAY, name, ConstantString.ADDRESS_CHOOSEN_RESTAURANT_FOR_THE_DAY, address)
+                .addOnSuccessListener(aVoid -> Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(getActivity(), getString(R.string.choice_succed_removed), Toast.LENGTH_SHORT).show());
     }
 
-
-
-    public void setOnClickListenerOnLikeButton(){
+    private void setOnClickListenerOnLikeButton(){
         tvRestaurantLike.setOnClickListener(v -> {
             if(dataUserConnected.getLikedRestaurants().contains(detailPlace.getResult().getPlaceId())){
                 dataUserConnected.getLikedRestaurants().remove(detailPlace.getResult().getPlaceId());
                 tvRestaurantLike.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_star_orange_24dp), null, null);
-                Toast.makeText(getActivity(), "Restaurant remove from your liked list !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.restaurant_removed_list, Toast.LENGTH_SHORT).show();
             }else{
                 dataUserConnected.getLikedRestaurants().add(detailPlace.getResult().getPlaceId());
                 tvRestaurantLike.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.ic_star_blue_24dp), null, null);
-                Toast.makeText(getActivity(), "Restaurant add to your liked list !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.restaurant_added_list, Toast.LENGTH_SHORT).show();
             }
-            FirebaseHelper.getUserDocument(FirebaseAuth.getInstance().getUid()).update("likedRestaurants", dataUserConnected.getLikedRestaurants());
+            FirebaseHelper.getUserDocument(FirebaseAuth.getInstance().getUid()).update(ConstantString.LIKED_RESTAURANT, dataUserConnected.getLikedRestaurants());
         });
     }
 
@@ -201,7 +194,7 @@ public class DetailsRestaurantFragment extends Fragment {
 
     private void startPhoneCall(String phoneNumber){
         Intent callIntent = new Intent(Intent.ACTION_CALL);
-        callIntent.setData(Uri.parse("tel:"+phoneNumber));
+        callIntent.setData(Uri.parse(ConstantString.TEL + phoneNumber));
         startActivity(callIntent);
     }
 
@@ -210,7 +203,7 @@ public class DetailsRestaurantFragment extends Fragment {
             String website = detailPlace.getResult().getWebsite();
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(website)));
         }catch(NullPointerException e){
-            Toast.makeText(getActivity(), "Pas de site web disponible", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), getString(R.string.no_website), Toast.LENGTH_SHORT).show();
         }
     }
 

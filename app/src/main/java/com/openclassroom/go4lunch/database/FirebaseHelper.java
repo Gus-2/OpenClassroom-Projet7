@@ -6,6 +6,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.openclassroom.go4lunch.models.DataUserConnected;
+import com.openclassroom.go4lunch.models.Message;
+
 import java.util.ArrayList;
 
 /**
@@ -14,19 +16,31 @@ import java.util.ArrayList;
 public class FirebaseHelper {
 
     private static final String COLLECTION_NAME = "users";
+    private static final String CHAT_COLLECTION_NAME = "chat_messages";
 
     public static CollectionReference getUserCollection(){
         return FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
+    }
+
+    public static CollectionReference getChatMessageCollection(){
+        return FirebaseFirestore.getInstance().collection(CHAT_COLLECTION_NAME);
+    }
+
+    public static Task<QuerySnapshot> getRealtimeMessage(){
+        return FirebaseFirestore.getInstance().collection(CHAT_COLLECTION_NAME).get();
     }
 
     public static DocumentReference getUserDocument(String userId){
         return getUserCollection().document(userId);
     }
 
-    // --- CREATE ---
     public static Task<Void> createUser(String uid, String firstnameAndLastname, String photoUrl) {
         DataUserConnected newUser = new DataUserConnected(uid, firstnameAndLastname, null, null, null, photoUrl, null, new ArrayList<>());
         return getUserCollection().document(uid).set(newUser);
+    }
+
+    public static Task<Void> addMessage(Message message) {
+        return getChatMessageCollection().document(message.getId().toString()).set(message);
     }
 
 

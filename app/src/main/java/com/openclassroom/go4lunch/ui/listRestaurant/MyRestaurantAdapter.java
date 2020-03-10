@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.openclassroom.go4lunch.BuildConfig;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
@@ -99,9 +100,9 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     @Override
     @NonNull
     public MyRestaurantAdapter.RestaurantViewHolder onCreateViewHolder(ViewGroup parent,
-                                                     int viewType) {
+                                                                       int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.rv_restaurants_item, parent, false);
+                .inflate(R.layout.rv_restaurants_item, parent, false);
         return new RestaurantViewHolder(v, onRestaurantListener);
 
     }
@@ -144,7 +145,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
                 Tools.getDistanceBetweenTwoPoints(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLat(), nearbyPlaces.getResults().get(position).getGeometry().getLocation().getLng())));
 
         try{
-            String url = ConstantString.URL_FIRST_PART + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() + ConstantString.URL_END_PART + context.getResources().getString(R.string.map_key);
+            String url = ConstantString.URL_FIRST_PART + nearbyPlaces.getResults().get(position).getPhotos().get(0).getPhotoReference() + ConstantString.URL_END_PART + BuildConfig.API_KEY;
             Glide.with(context)
                     .load(url)
                     .into(holder.ivRestaurant);
@@ -195,3 +196,4 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
         void onRestaurantClick(int position);
     }
 }
+

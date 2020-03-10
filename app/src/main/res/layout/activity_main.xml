@@ -10,22 +10,20 @@
     tools:openDrawer="start"
     tools:context="com.openclassroom.go4lunch.ui.Go4Lunch">
 
-    <!-- 1 | Go4Lunch RootView -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         >
 
-        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/activity_main_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
+            app:actionViewClass="android.support.v7.widget.SearchView"
             app:theme="@style/ToolBarStyle"/>
 
-        <!-- FrameLayout for our fragments -->
         <FrameLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
@@ -46,11 +44,11 @@
             app:itemTextColor="@drawable/bottom_navigation_colors"
             app:menu="@menu/bottom_navigation_menu"
             android:background="?android:attr/windowBackground"
+            app:labelVisibilityMode="labeled"
             android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
 
-    <!-- 2 | NavigationView -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/activity_main_nav_view"
         android:layout_width="wrap_content"

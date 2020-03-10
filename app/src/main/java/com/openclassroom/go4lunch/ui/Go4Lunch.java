@@ -34,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.openclassroom.go4lunch.BuildConfig;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DataUserConnected;
@@ -41,6 +42,7 @@ import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.service.MyFirebaseMessagingService;
+import com.openclassroom.go4lunch.ui.chat.ChatFragment;
 import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
 import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
@@ -51,10 +53,15 @@ import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.Disposable;
@@ -63,7 +70,6 @@ import io.reactivex.observers.DisposableObserver;
 public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
 
     private static final int RC_SIGN_IN = 123;
-
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -80,11 +86,12 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     FirebaseUser user;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
         if(!getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, MODE_PRIVATE).contains(ConstantString.EATING)){
             FirebaseMessaging.getInstance().subscribeToTopic(ConstantString.TOPIG_TO_SUBSCRIBE);
             SharedPreferences.Editor editor = getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, MODE_PRIVATE).edit();
@@ -104,7 +111,9 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
 
 
+
     private void startDefaultFragment(){
+        getSupportActionBar().setTitle(R.string.hungry);
         Bundle bundle = new Bundle();
 
         bundle.putParcelable(ConstantString.LOCATION, mLastKnownLocation);
@@ -168,10 +177,11 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     public void startActivity(){
         SecurityChecks.checkGooglePlayServices(getApplicationContext());
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        Places.initialize(this, getResources().getString(R.string.map_key));
+
+
+        Places.initialize(this, BuildConfig.API_KEY);
         Places.createClient(this);
         bottomNavigationView = findViewById(R.id.activity_main_bottom_navigation);
-
         this.configureNavigationBottom();
         this.configureToolBar();
         this.configureDrawerLayout();
@@ -276,10 +286,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                     }else{
                         Toast.makeText(activity, getResources().getString(R.string.message_restaurant_not_choosen), Toast.LENGTH_SHORT).show();
                     }
-
-
                 });
-
                 break;
             case R.id.activity_main_drawer_settings :
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SettingFragment()).commit();
@@ -325,6 +332,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 startDefaultFragment();
                 return true;
             } else if (menuItem.getItemId() == R.id.action_restaurant){
+                getSupportActionBar().setTitle(R.string.hungry);
                 RestaurantFragment restaurantFragment = new RestaurantFragment();
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(ConstantString.NEARBY_PLACES, nearbyLocations);
@@ -334,7 +342,12 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
                 return true;
             } else if (menuItem.getItemId() == R.id.action_workmate){
+                getSupportActionBar().setTitle(R.string.available_workmates);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WorkmatesFragment()).commit();
+                return true;
+            }else if(menuItem.getItemId() == R.id.action_chat){
+                getSupportActionBar().setTitle(R.string.chat);
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ChatFragment()).commit();
                 return true;
             }
             return false;
@@ -344,7 +357,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
     private void executeHttpRequestWithRetrofit(String location){
 
          this.disposable = RetrofitStreams.getNearbyRestaurantThenFetchTheirDetails(
-                location,getResources().getString(R.string.map_key)).subscribeWith(new DisposableObserver<List<DetailsPlaces>>(){
+                location,BuildConfig.API_KEY).subscribeWith(new DisposableObserver<List<DetailsPlaces>>(){
 
             @Override
             public void onNext(List<DetailsPlaces> detailsPlaces) {
@@ -398,9 +411,19 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         return mLastKnownLocation;
     }
 
+    public Location getLastKnownLocation(){
+        return mLastKnownLocation;
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         disposable.dispose();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        super.onOptionsItemSelected(item);
+        return false;
     }
 }

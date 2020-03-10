@@ -3,11 +3,17 @@ package com.openclassroom.go4lunch.ui.map;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,6 +27,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -38,6 +50,7 @@ import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +60,8 @@ import java.util.Objects;
  **/
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
+    private static final int RESULT_CANCELED = 2;
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private ListenerRegistration listenerRegistration;
     private MapView mapView;
     private GoogleMap map;
@@ -54,12 +69,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private NearbyPlaces nearbyLocation;
     private Location mLastKnownLocation;
     private HashMap<String, String> markers;
+    private boolean alreadyUpdated = false;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         SecurityChecks.checkGooglePlayServices(getContext());
         Bundle bundle = getArguments();
+        setHasOptionsMenu(true);
         if(bundle == null){
             nearbyLocation = ((Go4Lunch) Objects.requireNonNull(getActivity())).getNearbyLocations();
             mLastKnownLocation = ((Go4Lunch) getActivity()).getLocation();
@@ -70,12 +88,87 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         markers = new HashMap<>();
     }
 
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.option_menu_fragment, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.search :
+
+                List<Place.Field> fields = Arrays.asList(Place.Field.LAT_LNG);
+                Location lastKnownLocation = ((Go4Lunch)getActivity()).getLastKnownLocation();
+                double xPlus = lastKnownLocation.getLatitude() + 0.010000;
+                double yPlus = lastKnownLocation.getLongitude() + 0.100000;
+
+                double xLess = lastKnownLocation.getLatitude() - 0.010000;
+                double yLess = lastKnownLocation.getLongitude() - 0.100000;
+
+                Intent intent = new Autocomplete.IntentBuilder(
+                        AutocompleteActivityMode.FULLSCREEN, fields)
+                        .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                        .setLocationRestriction(RectangularBounds.newInstance(
+                                new LatLng(xLess, yLess),
+                                new LatLng(xPlus, yPlus)))
+                        .build(getActivity());
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == Go4Lunch.RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                com.openclassroom.go4lunch.models.Location location = new com.openclassroom.go4lunch.models.Location(Double.valueOf(place.getLatLng().latitude), Double.valueOf(place.getLatLng().longitude));
+                boolean isContained = Checks.isContainedInto(((Go4Lunch)getActivity()).getNearbyLocations(), location);
+                if(isContained){
+                        alreadyUpdated = true;
+                        map.clear();
+                        Drawable circleDrawable = getResources().getDrawable(R.drawable.ic_place_yellow_24dp);
+                        BitmapDescriptor markerIcon = getMarkerIconFromDrawable(circleDrawable);
+
+                        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(location.getLat(), location.getLng())).icon(markerIcon);
+                        Marker marker = map.addMarker(markerOptions);
+
+                        markers.put(marker.getId(), place.getId());
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(place.getLatLng().latitude, place.getLatLng().longitude), ConstantString.DEFAULT_ZOOM));
+                }else{
+                    Toast.makeText(getActivity(), "This restaurant is outside of your area !", Toast.LENGTH_LONG).show();
+                }
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Toast.makeText(getActivity(), "Processing Error !", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(getActivity(), "Processing Canceled !", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private BitmapDescriptor getMarkerIconFromDrawable(Drawable drawable) {
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.map_fragment, container, false);
         mapView = view.findViewById(R.id.map_view_fragment);
         initGoogleMap(savedInstanceState);
+        setHasOptionsMenu(true);
         return view;
     }
 
@@ -109,10 +202,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     public void onResume() {
         super.onResume();
         mapView.onResume();
-        if(map != null){
+        if(!alreadyUpdated && map != null){
             map.clear();
             getUserChoices(map);
         }
+        alreadyUpdated = false;
     }
 
     @Override
@@ -208,10 +302,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
     @Override
     public void onPause() {

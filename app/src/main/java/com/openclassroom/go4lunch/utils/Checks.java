@@ -1,5 +1,8 @@
 package com.openclassroom.go4lunch.utils;
 
+import com.google.type.LatLng;
+import com.openclassroom.go4lunch.models.Location;
+import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 
 import java.util.Calendar;
@@ -22,5 +25,12 @@ public class Checks {
                 && calendarNow.get(Calendar.DAY_OF_YEAR) == calendarChoosenRestaurant.get(Calendar.DAY_OF_YEAR)) return  true;
 
         return  false;
+    }
+
+    public static boolean isContainedInto(NearbyPlaces nearbyPlaces, Location location){
+        for(Result result: nearbyPlaces.getResults()){
+            if(result.getGeometry().getLocation().getLat().equals(location.getLat()) &&  result.getGeometry().getLocation().getLng().equals(location.getLng())) return  true;
+        }
+        return false;
     }
 }

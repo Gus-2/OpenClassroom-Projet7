@@ -25,11 +25,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.openclassroom.go4lunch.BuildConfig;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Result;
+import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.utils.Checks;
 import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
@@ -123,7 +125,8 @@ public class DetailsRestaurantFragment extends Fragment {
 
         try{
             String url = ConstantString.URL_FIRST_PICTURE + result.getPhotos().get(0).getPhotoReference() +
-                    ConstantString.URL_END_PART + getResources().getString(R.string.map_key);
+                    ConstantString.URL_END_PART + BuildConfig.API_KEY;
+            String i = url;
             Activity activity = getActivity();
             if(activity != null){
                 Glide.with(getActivity())

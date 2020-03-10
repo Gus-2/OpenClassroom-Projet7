@@ -6,17 +6,23 @@
         android:enabled="true"
         android:icon="@drawable/ic_bottom_navigation_map"
         android:title="@string/bottom_navigation_menu_map"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/action_restaurant"
         android:enabled="true"
         android:icon="@drawable/ic_bottom_navigation_list"
         android:title="@string/bottom_navigation_menu_list"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom|withText"/>
     <item
         android:id="@+id/action_workmate"
         android:enabled="true"
         android:icon="@drawable/ic_bottom_navigation_people"
         android:title="@string/bottom_navigation_menu_workmates"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/action_chat"
+        android:enabled="true"
+        android:icon="@drawable/ic_chat_black_24dp"
+        android:title="@string/chat"
+        app:showAsAction="ifRoom|withText"/>
 </menu>

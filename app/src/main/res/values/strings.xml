@@ -36,4 +36,9 @@
     <string name="restaurant_added_list">Restaurant add to your liked list !</string>
     <string name="no_website">No website available !</string>
     <string name="joining_colleague">%s is joining</string>
+    <string name="available_workmates">Available workmates</string>
+    <string name="hungry">I\'m hungry!</string>
+    <string name="search">Search</string>
+    <string name="chat">Chat</string>
+    <string name="send_message">Send</string>
 </resources>

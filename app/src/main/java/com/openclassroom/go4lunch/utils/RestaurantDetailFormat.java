@@ -2,7 +2,6 @@ package com.openclassroom.go4lunch.utils;
 
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
-import com.openclassroom.go4lunch.models.Result;
 
 import java.util.List;
 
@@ -23,15 +22,6 @@ public class RestaurantDetailFormat {
          }
          return null;
      }
-
-    public static String getPlaceIdFromId(NearbyPlaces nearbyPlaces, String id){
-        for(Result nearbyPlace : nearbyPlaces.getResults()){
-            if(nearbyPlace.getId().equals(id)) return nearbyPlace.getPlaceId();
-        }
-        return null;
-    }
-
-
 
     public static int getPositionFromPlaceID(NearbyPlaces nearbyPlaces, String placeID){
         for(int i = 0; i < nearbyPlaces.getResults().size(); i++){

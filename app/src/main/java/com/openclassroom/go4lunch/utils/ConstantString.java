@@ -27,6 +27,8 @@ public class ConstantString {
     public static final String ADDRESS_CHOOSEN_RESTAURANT_FOR_THE_DAY = "addressOfTheChoosenRestaurant";
     public static final String LIKED_RESTAURANT = "likedRestaurants";
     public static final String TEL = "tel:";
+    public static final String UNKNOW = "Unknow";
+    public static final String USER_ID = "userId";
 
     public final static int DEFAULT_ZOOM = 18;
 

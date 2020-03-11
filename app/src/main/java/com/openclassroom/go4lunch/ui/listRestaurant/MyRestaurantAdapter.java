@@ -2,7 +2,6 @@ package com.openclassroom.go4lunch.ui.listRestaurant;
 
 import android.content.Context;
 import android.location.Location;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +41,7 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
     private OnRestaurantListener onRestaurantListener;
     private List<DataUserConnected> dataUserConnecteds;
 
-    public class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public static class RestaurantViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         @BindView(R.id.tv_restaurant_title)
         TextView tvRestaurantTitle;
@@ -112,8 +111,6 @@ public class MyRestaurantAdapter extends RecyclerView.Adapter<MyRestaurantAdapte
 
         Calendar calendar = Calendar.getInstance();
         int day = calendar.get(Calendar.DAY_OF_WEEK)-1;
-
-        int hour = Integer.parseInt(calendar.get(Calendar.HOUR_OF_DAY) + "00");
 
         holder.tvRestaurantTitle.setText(nearbyPlaces.getResults().get(position).getName());
         try{

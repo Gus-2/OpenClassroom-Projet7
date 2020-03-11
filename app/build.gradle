@@ -13,7 +13,12 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
-        buildConfigField "String", "API_KEY", API_KEY
+        def addConstant = {constantName, constantValue ->
+            manifestPlaceholders += [ (constantName):constantValue]
+            buildConfigField "String", "${constantName}", "\"${constantValue}\""
+        }
+
+        addConstant("API_KEY", API_KEY)
     }
     buildTypes {
         release {

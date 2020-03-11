@@ -44,7 +44,7 @@ import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.ui.Go4Lunch;
-import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
+import com.openclassroom.go4lunch.ui.detailsRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.utils.Checks;
 import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
@@ -131,17 +131,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 com.openclassroom.go4lunch.models.Location location = new com.openclassroom.go4lunch.models.Location(Double.valueOf(place.getLatLng().latitude), Double.valueOf(place.getLatLng().longitude));
                 boolean isContained = Checks.isContainedInto(((Go4Lunch)getActivity()).getNearbyLocations(), location);
                 if(isContained){
-                        alreadyUpdated = true;
-                        map.clear();
-                        Drawable circleDrawable = getResources().getDrawable(R.drawable.ic_place_yellow_24dp);
-                        BitmapDescriptor markerIcon = getMarkerIconFromDrawable(circleDrawable);
+                    alreadyUpdated = true;
+                    map.clear();
+                    Drawable circleDrawable = getResources().getDrawable(R.drawable.ic_place_yellow_24dp);
+                    BitmapDescriptor markerIcon = getMarkerIconFromDrawable(circleDrawable);
 
-                        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(location.getLat(), location.getLng())).icon(markerIcon);
-                        Marker marker = map.addMarker(markerOptions);
+                    MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(location.getLat(), location.getLng())).icon(markerIcon);
+                    Marker marker = map.addMarker(markerOptions);
 
-                        markers.put(marker.getId(), place.getId());
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(place.getLatLng().latitude, place.getLatLng().longitude), ConstantString.DEFAULT_ZOOM));
+                    markers.put(marker.getId(), place.getId());
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(place.getLatLng().latitude, place.getLatLng().longitude), ConstantString.DEFAULT_ZOOM));
                 }else{
                     Toast.makeText(getActivity(), "This restaurant is outside of your area !", Toast.LENGTH_LONG).show();
                 }
@@ -172,7 +172,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         return view;
     }
 
-    private void initGoogleMap(Bundle savedInstanceState){
+    public void initGoogleMap(Bundle savedInstanceState){
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(ConstantString.MAPVIEW_BUNDLE_KEY);

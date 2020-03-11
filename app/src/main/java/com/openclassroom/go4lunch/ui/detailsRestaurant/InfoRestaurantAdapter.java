@@ -1,4 +1,4 @@
-package com.openclassroom.go4lunch.ui.detaileRestaurant;
+package com.openclassroom.go4lunch.ui.detailsRestaurant;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
@@ -22,7 +24,7 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
     private List<DataUserConnected> dataUserConnecteds;
     private Context context;
 
-    public class InfoRestaurantHolder extends RecyclerView.ViewHolder {
+    class InfoRestaurantHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.iv_colleagues_picture)
         ImageView ivColleaguePicture;
@@ -30,16 +32,17 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
         @BindView(R.id.tv_joining_colleague)
         TextView tvJoiningColleague;
 
-        public InfoRestaurantHolder(View itemView) {
+        InfoRestaurantHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public InfoRestaurantAdapter(Context context, List<DataUserConnected> dataUserConnecteds) {
+    InfoRestaurantAdapter(Context context, List<DataUserConnected> dataUserConnecteds) {
         this.context = context;
         this.dataUserConnecteds = dataUserConnecteds;
     }
+    @NonNull
     @Override
     public InfoRestaurantAdapter.InfoRestaurantHolder onCreateViewHolder(ViewGroup parent,
                                                                        int viewType) {

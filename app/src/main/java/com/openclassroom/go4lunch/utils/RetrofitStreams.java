@@ -20,7 +20,7 @@ public class RetrofitStreams {
 
     public static NearbyPlaces nearbyPlaces;
 
-    public static Observable<NearbyPlaces> streamFetchNearbyRestaurant(String location, String key){
+    private static Observable<NearbyPlaces> streamFetchNearbyRestaurant(String location, String key){
         JsonPlaceHolderApi jsonPlaceHolderApi = NearbyPlacesApiRequestSingleton.getInstanceNearbyPlaces().getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getExample(location, key)
                 .subscribeOn(Schedulers.io())
@@ -28,7 +28,7 @@ public class RetrofitStreams {
                 .timeout(10, TimeUnit.SECONDS);
     }
 
-    public static Observable<DetailsPlaces> streamFetchDetailRestaurant(String placeId, String key){
+    private static Observable<DetailsPlaces> streamFetchDetailRestaurant(String placeId, String key){
         JsonPlaceHolderApi jsonPlaceHolderApi = DetailsPlacesApiRequestSingleton.getInstanceDetailsPlaces().getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getPlaceDetails(placeId, key)
                 .subscribeOn(Schedulers.io())

@@ -56,12 +56,12 @@ public class ChatFragment extends Fragment {
 
         sendButton.setOnClickListener(v -> FirebaseHelper.addMessage(new Message(editText.getText().toString(), FirebaseAuth.getInstance().getCurrentUser().getDisplayName().split(" ")[0], FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString()))
                 .addOnCompleteListener(task -> {
-                    Toast.makeText(getActivity(), "Message is sent", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.message_sent, Toast.LENGTH_SHORT).show();
                     editText.setText("");
                     hideKeyboardFrom(getActivity(), view);
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getActivity(), "Error sending message !", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.error_sending, Toast.LENGTH_SHORT).show();
                 }));
 
         getAllMessage();
@@ -78,7 +78,7 @@ public class ChatFragment extends Fragment {
         CollectionReference collectionReference = FirebaseHelper.getChatMessageCollection();
         collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
             if (e != null) {
-                Toast.makeText(getActivity(), "Error retrieving message !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.error_retrieving, Toast.LENGTH_SHORT).show();
                 return;
             }
             messages.clear();

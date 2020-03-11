@@ -7,6 +7,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.Message;
+import com.openclassroom.go4lunch.utils.ConstantString;
 
 import java.util.ArrayList;
 
@@ -26,10 +27,6 @@ public class FirebaseHelper {
         return FirebaseFirestore.getInstance().collection(CHAT_COLLECTION_NAME);
     }
 
-    public static Task<QuerySnapshot> getRealtimeMessage(){
-        return FirebaseFirestore.getInstance().collection(CHAT_COLLECTION_NAME).get();
-    }
-
     public static DocumentReference getUserDocument(String userId){
         return getUserCollection().document(userId);
     }
@@ -45,7 +42,7 @@ public class FirebaseHelper {
 
 
     public static Task<QuerySnapshot> getUserData(String userId){
-        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME).whereEqualTo("userId", userId).get();
+        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME).whereEqualTo(ConstantString.USER_ID, userId).get();
     }
 
 }

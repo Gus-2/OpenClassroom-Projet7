@@ -41,4 +41,11 @@
     <string name="search">Search</string>
     <string name="chat">Chat</string>
     <string name="send_message">Send</string>
+    <string name="processing_canceled">Processing Canceled !</string>
+    <string name="processing_error">Processing Error !</string>
+    <string name="restaurant_outside_area">This restaurant is outside of your area !</string>
+    <string name="error_retrieving">Error retrieving message !</string>
+    <string name="error_sending">Error sending message !</string>
+    <string name="message_sent">Message is sent</string>
+    <string name="google_play_service_unavailable">Erreur : GooglePlaService is unavailable !</string>
 </resources>

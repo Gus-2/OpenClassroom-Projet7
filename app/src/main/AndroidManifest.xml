@@ -15,17 +15,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.detaileRestaurant.DetailRestaurantActivity">
+        <activity android:name=".ui.detailsRestaurant.DetailRestaurantActivity">
 
         </activity>
         <activity
-            android:name=".ui.detaileRestaurant.DetailsRestaurantFragment"
+            android:name=".ui.detailsRestaurant.DetailsRestaurantFragment"
             android:label="@string/title_activity_details_description_restaurant"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="d" />
+            android:value="${API_KEY}" />
 
         <activity android:name=".ui.Go4Lunch">
             <intent-filter>

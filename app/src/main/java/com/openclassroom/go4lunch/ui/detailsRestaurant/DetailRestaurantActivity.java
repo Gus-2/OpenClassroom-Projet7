@@ -1,4 +1,4 @@
-package com.openclassroom.go4lunch.ui.detaileRestaurant;
+package com.openclassroom.go4lunch.ui.detailsRestaurant;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;

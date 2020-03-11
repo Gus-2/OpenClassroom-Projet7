@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -27,7 +28,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
 
     private ArrayList<Message> messages;
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    static class MyViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.tv_workmate_sent_message_name)
         TextView name;
@@ -36,16 +37,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
         @BindView(R.id.cv_workmate_sent_message)
         CircleImageView picture;
 
-        public MyViewHolder(View itemView) {
+        MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public ChatAdapter(ArrayList<Message> messages) {
+    ChatAdapter(ArrayList<Message> messages) {
         this.messages = messages;
     }
 
+    @NonNull
     @Override
     public ChatAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                      int viewType) {

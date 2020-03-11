@@ -1,4 +1,4 @@
-package com.openclassroom.go4lunch.ui.detaileRestaurant;
+package com.openclassroom.go4lunch.ui.detailsRestaurant;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -31,7 +31,6 @@ import com.openclassroom.go4lunch.database.FirebaseHelper;
 import com.openclassroom.go4lunch.models.DataUserConnected;
 import com.openclassroom.go4lunch.models.DetailsPlaces;
 import com.openclassroom.go4lunch.models.Result;
-import com.openclassroom.go4lunch.ui.Go4Lunch;
 import com.openclassroom.go4lunch.utils.Checks;
 import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;

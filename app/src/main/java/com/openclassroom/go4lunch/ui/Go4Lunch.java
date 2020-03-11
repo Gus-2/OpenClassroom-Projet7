@@ -43,7 +43,7 @@ import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
 import com.openclassroom.go4lunch.service.MyFirebaseMessagingService;
 import com.openclassroom.go4lunch.ui.chat.ChatFragment;
-import com.openclassroom.go4lunch.ui.detaileRestaurant.DetailRestaurantActivity;
+import com.openclassroom.go4lunch.ui.detailsRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.ui.drawerMenu.SettingFragment;
 import com.openclassroom.go4lunch.ui.listRestaurant.RestaurantFragment;
 import com.openclassroom.go4lunch.ui.map.MapFragment;
@@ -54,14 +54,10 @@ import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.RetrofitStreams;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.reactivex.disposables.Disposable;
@@ -113,7 +109,10 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
 
 
     private void startDefaultFragment(){
+
+        if(getSupportActionBar() != null)
         getSupportActionBar().setTitle(R.string.hungry);
+
         Bundle bundle = new Bundle();
 
         bundle.putParcelable(ConstantString.LOCATION, mLastKnownLocation);
@@ -131,7 +130,8 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
-                        .setTheme(R.style.LoginTheme)
+                        .setTheme(R.style.AppThemeFirebaseAuthentification)
+                        .setLogo(R.drawable.eat)
                         .setAvailableProviders(
                                 Arrays.asList( //EMAIL
                                         new AuthUI.IdpConfig.FacebookBuilder().build(),
@@ -263,7 +263,6 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
         }
     }
 
-
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
 
@@ -274,15 +273,23 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 DocumentReference documentReference = FirebaseHelper.getUserDocument(user.getUid());
                 Go4Lunch activity = this;
                 documentReference.get().addOnCompleteListener(task -> {
-
                     DataUserConnected dataUserConnected = Objects.requireNonNull(task.getResult()).toObject(DataUserConnected.class);
-                    if(dataUserConnected.getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
-                        Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
-                        DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
-                        intent.putExtra(ConstantString.DETAIL_PLACE, detailPlace);
-                        Result result = activity.getNearbyLocations().getResults().get(RestaurantDetailFormat.getPositionFromPlaceID(activity.getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay()));
-                        intent.putExtra(ConstantString.RESULT, result);
-                        startActivity(intent);
+                    if(dataUserConnected != null && dataUserConnected.getChoosenRestaurantForTheDay() != null && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                        int findInNearbyPlaceList = RestaurantDetailFormat.getPositionFromPlaceID(activity.getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay());
+                        if(findInNearbyPlaceList != -1){
+                            Result result = activity.getNearbyLocations().getResults().get(RestaurantDetailFormat.getPositionFromPlaceID(activity.getNearbyLocations(), dataUserConnected.getChoosenRestaurantForTheDay()));
+                            Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
+                            DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
+                            intent.putExtra(ConstantString.DETAIL_PLACE, detailPlace);
+                            intent.putExtra(ConstantString.RESULT, result);
+                            intent.putExtra(ConstantString.UNKNOW, false);
+                            startActivity(intent);
+                        }else{
+                            Intent intent = new Intent(getApplicationContext(), DetailRestaurantActivity.class);
+                            DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(getDetailsPlaces(), dataUserConnected.getChoosenRestaurantForTheDay());
+                            intent.putExtra(ConstantString.UNKNOW, true);
+                            startActivity(intent);
+                        }
                     }else{
                         Toast.makeText(activity, getResources().getString(R.string.message_restaurant_not_choosen), Toast.LENGTH_SHORT).show();
                     }
@@ -332,7 +339,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 startDefaultFragment();
                 return true;
             } else if (menuItem.getItemId() == R.id.action_restaurant){
-                getSupportActionBar().setTitle(R.string.hungry);
+                if(getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.hungry);
                 RestaurantFragment restaurantFragment = new RestaurantFragment();
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(ConstantString.NEARBY_PLACES, nearbyLocations);
@@ -342,11 +349,11 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, restaurantFragment).commit();
                 return true;
             } else if (menuItem.getItemId() == R.id.action_workmate){
-                getSupportActionBar().setTitle(R.string.available_workmates);
+                if(getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.available_workmates);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new WorkmatesFragment()).commit();
                 return true;
             }else if(menuItem.getItemId() == R.id.action_chat){
-                getSupportActionBar().setTitle(R.string.chat);
+                if(getSupportActionBar() != null) getSupportActionBar().setTitle(R.string.chat);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ChatFragment()).commit();
                 return true;
             }

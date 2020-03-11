@@ -50,7 +50,7 @@ import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import com.openclassroom.go4lunch.utils.SecurityChecks;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -82,8 +82,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             nearbyLocation = ((Go4Lunch) Objects.requireNonNull(getActivity())).getNearbyLocations();
             mLastKnownLocation = ((Go4Lunch) getActivity()).getLocation();
         }else{
-            nearbyLocation = getArguments().getParcelable(ConstantString.NEARBY_LOCATION);
-            mLastKnownLocation = bundle.getParcelable(ConstantString.LOCATION);
+            if(getArguments() != null){
+                nearbyLocation = getArguments().getParcelable(ConstantString.NEARBY_LOCATION);
+                mLastKnownLocation = getArguments().getParcelable(ConstantString.LOCATION);
+            }
         }
         markers = new HashMap<>();
     }
@@ -96,39 +98,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.search :
+        if (item.getItemId() == R.id.search) {
+            List<Place.Field> fields = Collections.singletonList(Place.Field.LAT_LNG);
+            Location lastKnownLocation = ((Go4Lunch) getActivity()).getLastKnownLocation();
+            double xPlus = lastKnownLocation.getLatitude() + ConstantString.ADD_TO_LATITUDE;
+            double yPlus = lastKnownLocation.getLongitude() + ConstantString.ADD_TO_LONGITUDE;
 
-                List<Place.Field> fields = Arrays.asList(Place.Field.LAT_LNG);
-                Location lastKnownLocation = ((Go4Lunch)getActivity()).getLastKnownLocation();
-                double xPlus = lastKnownLocation.getLatitude() + 0.010000;
-                double yPlus = lastKnownLocation.getLongitude() + 0.100000;
+            double xLess = lastKnownLocation.getLatitude() - ConstantString.ADD_TO_LATITUDE;
+            double yLess = lastKnownLocation.getLongitude() - ConstantString.ADD_TO_LONGITUDE;
 
-                double xLess = lastKnownLocation.getLatitude() - 0.010000;
-                double yLess = lastKnownLocation.getLongitude() - 0.100000;
+            Intent intent = new Autocomplete.IntentBuilder(
+                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                    .setLocationRestriction(RectangularBounds.newInstance(
+                            new LatLng(xLess, yLess),
+                            new LatLng(xPlus, yPlus)))
+                    .build(getActivity());
+            startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
 
-                Intent intent = new Autocomplete.IntentBuilder(
-                        AutocompleteActivityMode.FULLSCREEN, fields)
-                        .setTypeFilter(TypeFilter.ESTABLISHMENT)
-                        .setLocationRestriction(RectangularBounds.newInstance(
-                                new LatLng(xLess, yLess),
-                                new LatLng(xPlus, yPlus)))
-                        .build(getActivity());
-                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == Go4Lunch.RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
-                com.openclassroom.go4lunch.models.Location location = new com.openclassroom.go4lunch.models.Location(Double.valueOf(place.getLatLng().latitude), Double.valueOf(place.getLatLng().longitude));
+                com.openclassroom.go4lunch.models.Location location = new com.openclassroom.go4lunch.models.Location(place.getLatLng().latitude, place.getLatLng().longitude);
                 boolean isContained = Checks.isContainedInto(((Go4Lunch)getActivity()).getNearbyLocations(), location);
                 if(isContained){
                     alreadyUpdated = true;
@@ -143,12 +144,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                             new LatLng(place.getLatLng().latitude, place.getLatLng().longitude), ConstantString.DEFAULT_ZOOM));
                 }else{
-                    Toast.makeText(getActivity(), "This restaurant is outside of your area !", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), R.string.restaurant_outside_area, Toast.LENGTH_LONG).show();
                 }
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                Toast.makeText(getActivity(), "Processing Error !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.processing_error, Toast.LENGTH_SHORT).show();
             } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(getActivity(), "Processing Canceled !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.processing_canceled, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -172,7 +173,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         return view;
     }
 
-    public void initGoogleMap(Bundle savedInstanceState){
+    private void initGoogleMap(Bundle savedInstanceState){
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(ConstantString.MAPVIEW_BUNDLE_KEY);

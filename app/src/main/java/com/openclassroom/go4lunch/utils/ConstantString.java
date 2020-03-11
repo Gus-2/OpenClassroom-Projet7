@@ -29,6 +29,8 @@ public class ConstantString {
     public static final String TEL = "tel:";
     public static final String UNKNOW = "Unknow";
     public static final String USER_ID = "userId";
+    public static final double ADD_TO_LATITUDE = 0.010000;
+    public static final double ADD_TO_LONGITUDE = 0.100000;
 
     public final static int DEFAULT_ZOOM = 18;
 

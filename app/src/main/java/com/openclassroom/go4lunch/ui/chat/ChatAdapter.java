@@ -11,9 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.models.Message;
-import com.openclassroom.go4lunch.ui.workmates.WorkmatesAdapter;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 

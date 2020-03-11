@@ -57,6 +57,7 @@ public class DetailsRestaurantFragment extends Fragment {
 
     @Nullable
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         dataUserConnecteds = new ArrayList<>();
         View view = inflater.inflate(R.layout.details_description_restaurant, container, false);
@@ -125,7 +126,6 @@ public class DetailsRestaurantFragment extends Fragment {
         try{
             String url = ConstantString.URL_FIRST_PICTURE + result.getPhotos().get(0).getPhotoReference() +
                     ConstantString.URL_END_PART + BuildConfig.API_KEY;
-            String i = url;
             Activity activity = getActivity();
             if(activity != null){
                 Glide.with(getActivity())

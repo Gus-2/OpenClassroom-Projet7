@@ -32,6 +32,7 @@ public class WorkmatesFragment extends Fragment {
 
     @Nullable
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.workmates_fragment, container, false);
 
@@ -52,9 +53,11 @@ public class WorkmatesFragment extends Fragment {
         listenerRegistration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
             if(e != null) Log.e("Error :", "Retrieving wormates list !");
             dataUserConnecteds.clear();
-            for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                dataUserConnecteds.add(documentSnapshot.toObject(DataUserConnected.class));
-                mAdapter.notifyDataSetChanged();
+            if(queryDocumentSnapshots != null){
+                for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                    dataUserConnecteds.add(documentSnapshot.toObject(DataUserConnected.class));
+                    mAdapter.notifyDataSetChanged();
+                }
             }
         });
 

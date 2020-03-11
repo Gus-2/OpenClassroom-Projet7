@@ -36,7 +36,7 @@ import com.openclassroom.go4lunch.ui.detailsRestaurant.DetailRestaurantActivity;
 import com.openclassroom.go4lunch.utils.ConstantString;
 import com.openclassroom.go4lunch.utils.RestaurantDetailFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -96,6 +96,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.search) {
             double xPlus = lastKnownLocation.getLatitude() + 0.010000;
@@ -104,7 +105,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
             double xLess = lastKnownLocation.getLatitude() - 0.010000;
             double yLess = lastKnownLocation.getLongitude() - 0.100000;
 
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID);
+            List<Place.Field> fields = Collections.singletonList(Place.Field.ID);
 
             Intent intent = new Autocomplete.IntentBuilder(
                     AutocompleteActivityMode.FULLSCREEN, fields)
@@ -121,6 +122,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == Go4Lunch.RESULT_OK) {
@@ -151,6 +153,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onRestaurantClick(int position) {
         Intent intent = new Intent(getActivity(), DetailRestaurantActivity.class);
         DetailsPlaces detailPlace = RestaurantDetailFormat.getDetailPlacesFromPlaceID(detailsPlaces, nearbyPlaces.getResults().get(position).getPlaceId());

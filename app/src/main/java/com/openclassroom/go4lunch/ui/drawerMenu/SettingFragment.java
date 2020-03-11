@@ -19,6 +19,7 @@ import com.openclassroom.go4lunch.utils.ConstantString;
  **/
 public class SettingFragment extends Fragment {
 
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState ){
         View view = inflater.inflate(R.layout.settings_fragment, container, false);
 
@@ -37,6 +38,7 @@ public class SettingFragment extends Fragment {
         return view;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void enableNotification(){
         FirebaseMessaging.getInstance().subscribeToTopic(ConstantString.TOPIG_TO_SUBSCRIBE);
         SharedPreferences pref = getActivity().getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, Activity.MODE_PRIVATE);
@@ -46,6 +48,8 @@ public class SettingFragment extends Fragment {
         Toast.makeText(getActivity(), ConstantString.NOTIFICATION_ENABLE_TXT, Toast.LENGTH_SHORT).show();
     }
 
+
+    @SuppressWarnings("ConstantConditions")
     private void disableNotification(){
         FirebaseMessaging.getInstance().unsubscribeFromTopic(ConstantString.TOPIG_TO_SUBSCRIBE);
         SharedPreferences pref = getActivity().getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, Activity.MODE_PRIVATE);

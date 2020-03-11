@@ -12,7 +12,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class DetailsPlacesApiRequestSingleton {
 
     private static DetailsPlacesApiRequestSingleton instance = null;
-    private static Retrofit retrofitDetailsPlaces;
     private static JsonPlaceHolderApi jsonPlaceHolderApi;
 
     private DetailsPlacesApiRequestSingleton(){
@@ -21,9 +20,8 @@ public class DetailsPlacesApiRequestSingleton {
 
     public static DetailsPlacesApiRequestSingleton getInstanceDetailsPlaces() {
         if(instance == null){
-            //OkHttpClient httpClient = new OkHttpClient().newBuilder().addInterceptor(new ChuckInterceptor());
             instance = new DetailsPlacesApiRequestSingleton();
-            retrofitDetailsPlaces = new Retrofit.Builder()
+            Retrofit retrofitDetailsPlaces = new Retrofit.Builder()
                     .baseUrl("https://maps.googleapis.com/maps/api/place/details/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

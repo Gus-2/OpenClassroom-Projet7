@@ -39,6 +39,7 @@ public class ChatFragment extends Fragment {
 
     @Nullable
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.chat_fragment, container, false);
 
@@ -60,16 +61,15 @@ public class ChatFragment extends Fragment {
                     editText.setText("");
                     hideKeyboardFrom(getActivity(), view);
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getActivity(), R.string.error_sending, Toast.LENGTH_SHORT).show();
-                }));
+                .addOnFailureListener(e -> Toast.makeText(getActivity(), R.string.error_sending, Toast.LENGTH_SHORT).show()));
 
         getAllMessage();
         return view;
     }
 
-    public static void hideKeyboardFrom(Context context, View view) {
+    private static void hideKeyboardFrom(Context context, View view) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        assert imm != null;
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
@@ -82,10 +82,13 @@ public class ChatFragment extends Fragment {
                 return;
             }
             messages.clear();
-            for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                messages.add(doc.toObject(Message.class));
-                chatAdapter.notifyDataSetChanged();
+            if(queryDocumentSnapshots != null){
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    messages.add(doc.toObject(Message.class));
+                    chatAdapter.notifyDataSetChanged();
+                }
             }
+
             recyclerView.scrollToPosition(messages.size() - 1);
         });
     }

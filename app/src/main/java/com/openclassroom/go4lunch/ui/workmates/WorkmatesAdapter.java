@@ -1,9 +1,12 @@
 package com.openclassroom.go4lunch.ui.workmates;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.openclassroom.go4lunch.R;
@@ -15,14 +18,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.openclassroom.go4lunch.R.string.colleague_has_decided;
+import static com.openclassroom.go4lunch.R.string.colleague_hasnt_decided;
+import static com.openclassroom.go4lunch.R.string.colleague_is_eating_outside_area;
+
 /**
  * Created by de Meeûs Augustin on 2020-03-03
  **/
 public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.MyViewHolder> {
     private List<DataUserConnected> dataUserConnecteds;
     private NearbyPlaces nearbyPlaces;
-
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    private Context context;
+    static class MyViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.iv_colleagues_picture)
         CircleImageView circleImageView;
@@ -30,17 +37,19 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.MyVi
         @BindView(R.id.tv_joining_colleague)
         TextView tvJoiningColleague;
 
-        public MyViewHolder(View itemView) {
+        MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
 
-    public WorkmatesAdapter(List<DataUserConnected> dataUserConnecteds, NearbyPlaces nearbyPlaces) {
+    WorkmatesAdapter(List<DataUserConnected> dataUserConnecteds, NearbyPlaces nearbyPlaces, Context context) {
         this.dataUserConnecteds = dataUserConnecteds;
         this.nearbyPlaces = nearbyPlaces;
+        this.context = context;
     }
 
+    @NonNull
     @Override
     public WorkmatesAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                      int viewType) {
@@ -66,11 +75,11 @@ public class WorkmatesAdapter extends RecyclerView.Adapter<WorkmatesAdapter.MyVi
                     break;
                 }
             }
-            if(found) holder.tvJoiningColleague.setText(names[0] + " is going to eat at " + dataUserConnecteds.get(position).getNameOfTheChoosenRestaurant());
-            else  holder.tvJoiningColleague.setText(names[0] + " is going to eat outside of your area " );
+            if(found) holder.tvJoiningColleague.setText(String.format(context.getResources().getString(colleague_has_decided),names[0], dataUserConnecteds.get(position).getNameOfTheChoosenRestaurant()));
+            else  holder.tvJoiningColleague.setText(context.getResources().getString(R.string.colleague_is_eating_outside_area,names[0]));
 
         }else{
-            holder.tvJoiningColleague.setText(names[0] + " hasn't decided yet ");
+            holder.tvJoiningColleague.setText(String.format(context.getResources().getString(colleague_hasnt_decided),names[0]));
         }
     }
 

@@ -15,7 +15,7 @@ public class ConstantString {
     public static final String DETAIL_PLACE = "DetailPlace";
     public static final String DETAILS_PLACES = "DetailsPlaces";
     public static final String NEARBY_PLACES = "NearbyPlaces";
-    public static final String OK = "Ok";
+    public static final String OK_LOWERCASE = "Ok";
     public static final String RESULT = "Result";
     public static final String URL_FIRST_PART = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&maxHeight=400&photoreference=";
     public static final String URL_END_PART = "&key=";
@@ -31,7 +31,9 @@ public class ConstantString {
     public static final String USER_ID = "userId";
     public static final double ADD_TO_LATITUDE = 0.010000;
     public static final double ADD_TO_LONGITUDE = 0.100000;
-
+    public static final String NOTIFICATION_CHANNEL_ID = "where_am_i_eating_notification";
+    public static final String OK_UPPERCASE = "OK";
+    public static final String MY_NOTIFICATIONS = "My Notifications";
     public final static int DEFAULT_ZOOM = 18;
 
 

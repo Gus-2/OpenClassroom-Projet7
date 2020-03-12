@@ -1,21 +1,21 @@
 <resources>
     <string name="app_name">Go4Lunch</string>
-    <string name="connection_secceded">Connection successful</string>
+    <string name="connection_secceded">Connection successful !</string>
     <string name="error_authentification_canceled">Unable to identify you !</string>
     <string name="error_no_internet">No internet connection</string>
     <string name="error_unknow_error">Unknown error !</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
     <string name="bottom_navigation_menu_map">Map View</string>
     <string name="bottom_navigation_menu_list">List View</string>
     <string name="bottom_navigation_menu_workmates">Workmates</string>
     <string name="drawer_your_lunch">YOUR LUNCH</string>
     <string name="activity_main_drawer_settings">SETTINGS</string>
     <string name="activity_main_drawer_logout">LOG OUT</string>
-    <string name="drawer_header_go4lunch">Go4Lunch</string>
-    <string name="facebook_application_id">491534045101730</string>
-    <string name="fb_login_protocol_scheme">fb491534045101730</string>
-    <string name="title_activity_details_description_restaurant">DetailsDescriptionRestaurant</string>
+    <string name="drawer_header_go4lunch" translatable="false">Go4Lunch</string>
+    <string name="facebook_application_id" translatable="false">491534045101730</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb491534045101730</string>
+    <string name="title_activity_details_description_restaurant" translatable="false">DetailsDescriptionRestaurant</string>
     <string name="open_until">Open until %sh%s </string>
     <string name="action_settings">Settings</string>
     <string name="error_retrieving_data">Error retrieving data</string>
@@ -26,9 +26,9 @@
     <string name="message_restaurant_not_choosen">You didn\'t choose a restaurant for the day !</string>
     <string name="closed">Closed</string>
     <string name="schedule_unavailable">Schedule not available</string>
-    <string name="distance_between_two_points">%d m</string>
-    <string name="joining_colleagues">(%d)</string>
-    <string name="unable_pass_data_activities">Unable to pass data between activities !</string>
+    <string name="distance_between_two_points" translatable="false">%d m</string>
+    <string name="joining_colleagues" translatable="false">(%d)</string>
+    <string name="unable_pass_data_activities" translatable="false">Unable to pass data between activities !</string>
     <string name="image_unavailable">Image unavailable !</string>
     <string name="choice_succed_removed">Your choice has been successfully removed !</string>
     <string name="choice_success_registered">Your choice has been successfully registered !</string>
@@ -39,7 +39,7 @@
     <string name="available_workmates">Available workmates</string>
     <string name="hungry">I\'m hungry!</string>
     <string name="search">Search</string>
-    <string name="chat">Chat</string>
+    <string name="chat" translatable="false">Chat</string>
     <string name="send_message">Send</string>
     <string name="processing_canceled">Processing Canceled !</string>
     <string name="processing_error">Processing Error !</string>
@@ -47,5 +47,11 @@
     <string name="error_retrieving">Error retrieving message !</string>
     <string name="error_sending">Error sending message !</string>
     <string name="message_sent">Message is sent</string>
-    <string name="google_play_service_unavailable">Erreur : GooglePlaService is unavailable !</string>
+    <string name="google_play_service_unavailable">Error : GooglePlayService is unavailable !</string>
+    <string name="having_lunch_at">Hey %s, you\'re having lunch at %s today</string>
+    <string name="address_lunch_at">Address : %s \n</string>
+    <string name="colleague_joinig_lunch_at">Colleagues that are joining you : %s</string>
+    <string name="colleague_hasnt_decided">%s hasn\'t decided yet </string>
+    <string name="colleague_has_decided">%s is going to eat at %s</string>
+    <string name="colleague_is_eating_outside_area"> %s is going to eat outside of your area</string>
 </resources>

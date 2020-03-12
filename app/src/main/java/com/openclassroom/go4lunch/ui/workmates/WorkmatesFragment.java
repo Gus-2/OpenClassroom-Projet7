@@ -40,7 +40,7 @@ public class WorkmatesFragment extends Fragment {
         RecyclerView recyclerView = view.findViewById(R.id.rv_where_colleagues_are_eating);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new WorkmatesAdapter(dataUserConnecteds, ((Go4Lunch) getActivity()).getNearbyLocations());
+        mAdapter = new WorkmatesAdapter(dataUserConnecteds, ((Go4Lunch) getActivity()).getNearbyLocations(), getActivity());
         recyclerView.setAdapter(mAdapter);
 
         return view;
@@ -51,7 +51,7 @@ public class WorkmatesFragment extends Fragment {
         super.onStart();
         CollectionReference collectionReference = FirebaseHelper.getUserCollection();
         listenerRegistration = collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
-            if(e != null) Log.e("Error :", "Retrieving wormates list !");
+            if(e != null) e.printStackTrace();
             dataUserConnecteds.clear();
             if(queryDocumentSnapshots != null){
                 for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
@@ -60,7 +60,6 @@ public class WorkmatesFragment extends Fragment {
                 }
             }
         });
-
     }
 
     @Override

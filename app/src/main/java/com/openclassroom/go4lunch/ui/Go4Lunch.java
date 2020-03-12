@@ -165,7 +165,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage(getResources().getString(R.string.allow_location_services));
-                builder.setPositiveButton(ConstantString.OK, (dialog, id) -> finish());
+                builder.setPositiveButton(ConstantString.OK_LOWERCASE, (dialog, id) -> finish());
                 builder.create();
                 builder.show();
             }

@@ -34,7 +34,7 @@ public class DetailsPlacesApiRequestSingleton {
         return instance;
     }
 
-    public static JsonPlaceHolderApi getJsonPlaceHolderApi(){
+    public  JsonPlaceHolderApi getJsonPlaceHolderApi(){
         return jsonPlaceHolderApi;
     }
 

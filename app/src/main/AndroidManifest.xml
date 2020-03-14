@@ -27,7 +27,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${API_KEY}" />
 
-        <activity android:name=".ui.Go4Lunch">
+        <activity android:name=".ui.Go4Lunch"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

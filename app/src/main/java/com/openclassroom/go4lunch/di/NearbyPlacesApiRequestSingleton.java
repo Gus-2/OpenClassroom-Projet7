@@ -33,7 +33,7 @@ public class NearbyPlacesApiRequestSingleton {
         return instance;
     }
 
-    public static JsonPlaceHolderApi getJsonPlaceHolderApi(){
+    public JsonPlaceHolderApi getJsonPlaceHolderApi(){
         return jsonPlaceHolderApi;
     }
 

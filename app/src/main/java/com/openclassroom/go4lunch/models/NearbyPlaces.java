@@ -39,6 +39,13 @@ public class NearbyPlaces implements Parcelable {
         dest.writeString(status);
     }
 
+    public NearbyPlaces(List<Object> htmlAttributions, String nextPageToken, List<Result> results, String status) {
+        this.htmlAttributions = htmlAttributions;
+        this.nextPageToken = nextPageToken;
+        this.results = results;
+        this.status = status;
+    }
+
     @Override
     public int describeContents() {
         return 0;

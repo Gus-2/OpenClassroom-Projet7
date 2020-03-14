@@ -105,6 +105,24 @@ public class Result implements Parcelable {
         vicinity = in.readString();
     }
 
+    public Result(Geometry geometry, String icon, String id, String name, OpeningHours openingHours, List<Photo> photos, String placeId, PlusCode plusCode, Integer priceLevel, Double rating, String reference, String scope, List<String> types, Integer userRatingsTotal, String vicinity) {
+        this.geometry = geometry;
+        this.icon = icon;
+        this.id = id;
+        this.name = name;
+        this.openingHours = openingHours;
+        this.photos = photos;
+        this.placeId = placeId;
+        this.plusCode = plusCode;
+        this.priceLevel = priceLevel;
+        this.rating = rating;
+        this.reference = reference;
+        this.scope = scope;
+        this.types = types;
+        this.userRatingsTotal = userRatingsTotal;
+        this.vicinity = vicinity;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(geometry, flags);

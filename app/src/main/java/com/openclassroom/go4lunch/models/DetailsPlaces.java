@@ -19,6 +19,12 @@ public class DetailsPlaces implements Parcelable {
     @Expose
     private String status;
 
+    public DetailsPlaces(List<Object> htmlAttributions, ResultDetailed result, String status) {
+        this.htmlAttributions = htmlAttributions;
+        this.result = result;
+        this.status = status;
+    }
+
     protected DetailsPlaces(Parcel in) {
         result = in.readParcelable(Result.class.getClassLoader());
         status = in.readString();

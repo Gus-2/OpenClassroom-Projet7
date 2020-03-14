@@ -24,7 +24,7 @@ public class InfoRestaurantAdapter extends RecyclerView.Adapter<InfoRestaurantAd
     private List<DataUserConnected> dataUserConnecteds;
     private Context context;
 
-    class InfoRestaurantHolder extends RecyclerView.ViewHolder {
+    static class InfoRestaurantHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.iv_colleagues_picture)
         ImageView ivColleaguePicture;

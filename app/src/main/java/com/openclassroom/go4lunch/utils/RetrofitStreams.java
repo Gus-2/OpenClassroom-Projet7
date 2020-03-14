@@ -21,7 +21,7 @@ public class RetrofitStreams {
     public static NearbyPlaces nearbyPlaces;
 
     private static Observable<NearbyPlaces> streamFetchNearbyRestaurant(String location, String key){
-        JsonPlaceHolderApi jsonPlaceHolderApi = NearbyPlacesApiRequestSingleton.getInstanceNearbyPlaces().getJsonPlaceHolderApi();
+        JsonPlaceHolderApi jsonPlaceHolderApi = NearbyPlacesApiRequestSingleton.getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getExample(location, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -29,7 +29,7 @@ public class RetrofitStreams {
     }
 
     private static Observable<DetailsPlaces> streamFetchDetailRestaurant(String placeId, String key){
-        JsonPlaceHolderApi jsonPlaceHolderApi = DetailsPlacesApiRequestSingleton.getInstanceDetailsPlaces().getJsonPlaceHolderApi();
+        JsonPlaceHolderApi jsonPlaceHolderApi = DetailsPlacesApiRequestSingleton.getJsonPlaceHolderApi();
         return jsonPlaceHolderApi.getPlaceDetails(placeId, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -38,7 +38,7 @@ public class RetrofitStreams {
 
     public static Observable<List<DetailsPlaces>> getNearbyRestaurantThenFetchTheirDetails(String location, String key){
         return streamFetchNearbyRestaurant(location, key)
-                .map(example -> RetrofitStreams.setExampleAndReturnResult(example))
+                .map(RetrofitStreams::setExampleAndReturnResult)
                 .flatMapIterable(results -> results)
                 .flatMap(result -> streamFetchDetailRestaurant(result.getPlaceId(), key ))
                 .toList()

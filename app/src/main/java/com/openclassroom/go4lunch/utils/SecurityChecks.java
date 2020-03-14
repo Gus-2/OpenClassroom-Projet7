@@ -17,7 +17,7 @@ public class SecurityChecks {
         int result = googleAPI.isGooglePlayServicesAvailable(context);
         if(result != ConnectionResult.SUCCESS) {
             if(googleAPI.isUserResolvableError(result)) {
-                Toast.makeText(context, R.string.google_play_service_unavailable, Toast.LENGTH_SHORT);
+                Toast.makeText(context, R.string.google_play_service_unavailable, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -24,6 +24,13 @@ public class ResultDetailed implements Parcelable {
     @Expose
     private String website;
 
+    public ResultDetailed(String formattedAddress, OpeningHoursDetailed openingHours, String placeId, String internationalPhoneNumber, String website) {
+        this.formattedAddress = formattedAddress;
+        this.openingHours = openingHours;
+        this.placeId = placeId;
+        this.internationalPhoneNumber = internationalPhoneNumber;
+        this.website = website;
+    }
 
     protected ResultDetailed(Parcel in) {
         formattedAddress = in.readString();

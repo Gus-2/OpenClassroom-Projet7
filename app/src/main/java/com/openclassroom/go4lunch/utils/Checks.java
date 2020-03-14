@@ -1,10 +1,8 @@
 package com.openclassroom.go4lunch.utils;
 
-import com.google.type.LatLng;
 import com.openclassroom.go4lunch.models.Location;
 import com.openclassroom.go4lunch.models.NearbyPlaces;
 import com.openclassroom.go4lunch.models.Result;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,13 +15,10 @@ public class Checks {
         if(dateToCheck == null) return false;
         Calendar calendarNow;
         Calendar calendarChoosenRestaurant = Calendar.getInstance();
-
         calendarChoosenRestaurant.setTime(dateToCheck);
         calendarNow = Calendar.getInstance();
-
         if(calendarNow.get(Calendar.YEAR) == calendarChoosenRestaurant.get(Calendar.YEAR)
                 && calendarNow.get(Calendar.DAY_OF_YEAR) == calendarChoosenRestaurant.get(Calendar.DAY_OF_YEAR)) return  true;
-
         return  false;
     }
 

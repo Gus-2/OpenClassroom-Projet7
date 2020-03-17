@@ -42,7 +42,7 @@ public class FirebaseHelper {
 
 
     public static Task<QuerySnapshot> getUserData(String userId){
-        return FirebaseFirestore.getInstance().collection(COLLECTION_NAME).whereEqualTo(ConstantString.USER_ID, userId).get();
+        return getUserCollection().whereEqualTo(ConstantString.USER_ID, userId).get();
     }
 
 }

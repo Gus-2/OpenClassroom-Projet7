@@ -45,7 +45,7 @@ public class SettingFragment extends Fragment {
         SharedPreferences.Editor editor = pref.edit();
         editor.putBoolean(ConstantString.EATING, true);
         editor.apply();
-        Toast.makeText(getActivity(), ConstantString.NOTIFICATION_ENABLE_TXT, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), R.string.notification_enable, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -56,6 +56,6 @@ public class SettingFragment extends Fragment {
         SharedPreferences.Editor editor = pref.edit();
         editor.putBoolean(ConstantString.EATING, false);
         editor.apply();
-        Toast.makeText(getActivity(), ConstantString.NOTIFICATION_DISABLE_TXT, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), R.string.notification_disable, Toast.LENGTH_SHORT).show();
     }
 }

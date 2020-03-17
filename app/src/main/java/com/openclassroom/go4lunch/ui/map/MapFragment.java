@@ -110,7 +110,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             double yLess = lastKnownLocation.getLongitude() - ConstantString.ADD_TO_LONGITUDE;
 
             Intent intent = new Autocomplete.IntentBuilder(
-                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    AutocompleteActivityMode.OVERLAY, fields)
                     .setTypeFilter(TypeFilter.ESTABLISHMENT)
                     .setLocationRestriction(RectangularBounds.newInstance(
                             new LatLng(xLess, yLess),
@@ -291,7 +291,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         View view = getView();
         if(view != null){
             FloatingActionButton locateUseerButton = view.findViewById(R.id.float_button_locate_user);
-            locateUseerButton.setOnClickListener(v -> ((Go4Lunch) Objects.requireNonNull(getActivity())).getDeviceLocation());
+            locateUseerButton.setOnClickListener(v -> {
+                map.clear();
+                moveToWhereUserIsLocated();
+                displayTheRestaurantsNearby(map);
+            });
         }
     }
 

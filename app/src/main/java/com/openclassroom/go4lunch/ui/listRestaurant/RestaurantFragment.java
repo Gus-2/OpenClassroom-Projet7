@@ -108,7 +108,7 @@ public class RestaurantFragment extends Fragment implements MyRestaurantAdapter.
             List<Place.Field> fields = Collections.singletonList(Place.Field.ID);
 
             Intent intent = new Autocomplete.IntentBuilder(
-                    AutocompleteActivityMode.FULLSCREEN, fields)
+                    AutocompleteActivityMode.OVERLAY, fields)
                     .setTypeFilter(TypeFilter.ESTABLISHMENT)
                     .setLocationRestriction(RectangularBounds.newInstance(
                             new LatLng(xLess, yLess),

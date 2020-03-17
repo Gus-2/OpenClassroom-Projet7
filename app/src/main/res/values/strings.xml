@@ -50,8 +50,11 @@
     <string name="google_play_service_unavailable">Error : GooglePlayService is unavailable !</string>
     <string name="having_lunch_at">Hey %s, you\'re having lunch at %s today</string>
     <string name="address_lunch_at">Address : %s \n</string>
-    <string name="colleague_joinig_lunch_at">Colleagues that are joining you : %s</string>
+    <string name="colleague_joinig_lunch_at">, Colleagues that are joining you : %s</string>
     <string name="colleague_hasnt_decided">%s hasn\'t decided yet </string>
     <string name="colleague_has_decided">%s is going to eat at %s</string>
     <string name="colleague_is_eating_outside_area"> %s is going to eat outside of your area</string>
+    <string name="your_message">Your message ...</string>
+    <string name="notification_enable">Notification enable !</string>
+    <string name="notification_disable">Notification disable !</string>
 </resources>

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,7 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.openclassroom.go4lunch.R;
 import com.openclassroom.go4lunch.database.FirebaseHelper;
@@ -37,6 +38,7 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+
     @Nullable
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -44,7 +46,6 @@ public class ChatFragment extends Fragment {
         View view = inflater.inflate(R.layout.chat_fragment, container, false);
 
         recyclerView = view.findViewById(R.id.rv_chat);
-
         recyclerView.setHasFixedSize(true);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutManager);
@@ -75,8 +76,8 @@ public class ChatFragment extends Fragment {
 
     private void getAllMessage(){
 
-        CollectionReference collectionReference = FirebaseHelper.getChatMessageCollection();
-        collectionReference.addSnapshotListener((queryDocumentSnapshots, e) -> {
+        Query queryMessage = FirebaseHelper.getChatMessageCollection().orderBy("id");
+        queryMessage.addSnapshotListener((queryDocumentSnapshots, e) -> {
             if (e != null) {
                 Toast.makeText(getActivity(), R.string.error_retrieving, Toast.LENGTH_SHORT).show();
                 return;

@@ -1,9 +1,5 @@
 package com.openclassroom.go4lunch.models;
 
-
-
-import com.google.firebase.Timestamp;
-
 import java.util.Calendar;
 import java.util.Date;
 

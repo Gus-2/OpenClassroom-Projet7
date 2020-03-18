@@ -211,8 +211,6 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                     checkIfUserIsInDataBase();
                 }
                 getLocationPermission();
-            } else {
-                startSignInActivity();
             }
         }
     }
@@ -244,7 +242,7 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
                 showSnackBar(this.drawerLayout, getString(R.string.connection_secceded));
             }else{
                 if(response == null){
-                    showSnackBar(this.drawerLayout, getString(R.string.error_authentification_canceled));
+                    finish();
                 }else if(response.getError() != null && response.getError().getErrorCode() == ErrorCodes.NO_NETWORK){
                     showSnackBar(this.drawerLayout, getString(R.string.error_no_internet));
                 }else if(response.getError() != null && response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR){

@@ -150,7 +150,6 @@ public class Go4Lunch extends AppCompatActivity implements  NavigationView.OnNav
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            Toast.makeText(this, getResources().getString(R.string.allow_location_permission), Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -139,8 +140,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
                     MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(location.getLat(), location.getLng())).icon(markerIcon);
                     Marker marker = map.addMarker(markerOptions);
+                    markers.clear();
 
-                    markers.put(marker.getId(), place.getId());
+                    markers.put(marker.getId(), Checks.getNearbyPlacesFromLocation(nearbyLocation, location).getPlaceId());
+
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                             new LatLng(place.getLatLng().latitude, place.getLatLng().longitude), ConstantString.DEFAULT_ZOOM));
                 }else{
@@ -204,8 +207,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         super.onResume();
         mapView.onResume();
         if(!alreadyUpdated && map != null){
-            map.clear();
             getUserChoices(map);
+            map.clear();
         }
         alreadyUpdated = false;
     }
@@ -268,7 +271,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         for(int i = 0; i < nearbyLocation.getResults().size(); i++){
             boolean found = false;
             for(DataUserConnected dataUserConnected : dataUserConnecteds){
-                if(dataUserConnected.getChoosenRestaurantForTheDay() != null && dataUserConnected.getChoosenRestaurantForTheDay().equals(nearbyLocation.getResults().get(i).getPlaceId()) && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
+                if(dataUserConnected.getChoosenRestaurantForTheDay() != null
+                        && dataUserConnected.getChoosenRestaurantForTheDay().equals(nearbyLocation.getResults().get(i).getPlaceId())
+                        && Checks.checkIfGoodDate(dataUserConnected.getDateOfTheChoosenRestaurant())){
                     MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(nearbyLocation.getResults().get(i).getGeometry().getLocation().getLat(),
                             nearbyLocation.getResults().get(i).getGeometry().getLocation().getLng())).icon(markerIconDescriptorBlue);
                     Marker marker = map.addMarker(markerOptions);

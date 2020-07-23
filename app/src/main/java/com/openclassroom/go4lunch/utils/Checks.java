@@ -28,4 +28,11 @@ public class Checks {
         }
         return false;
     }
+
+    public static Result getNearbyPlacesFromLocation(NearbyPlaces nearbyPlaces, Location location){
+        for(Result result: nearbyPlaces.getResults()){
+            if(result.getGeometry().getLocation().getLat().equals(location.getLat()) &&  result.getGeometry().getLocation().getLng().equals(location.getLng())) return  result;
+        }
+        return null;
+    }
 }

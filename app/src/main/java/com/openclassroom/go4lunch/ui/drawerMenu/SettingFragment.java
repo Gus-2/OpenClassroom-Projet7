@@ -24,7 +24,7 @@ public class SettingFragment extends Fragment {
         View view = inflater.inflate(R.layout.settings_fragment, container, false);
 
         Switch switchNotification = view.findViewById(R.id.sw_enable_disable_notification);
-        if(getActivity().getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, Activity.MODE_PRIVATE).getBoolean(ConstantString.EATING, false)){
+        if(getActivity().getSharedPreferences(ConstantString.NOTIFICATION_ENABLE, Activity.MODE_PRIVATE).getBoolean(ConstantString.EATING, true)){
             switchNotification.setChecked(true);
         }else{
             switchNotification.setChecked(false);
